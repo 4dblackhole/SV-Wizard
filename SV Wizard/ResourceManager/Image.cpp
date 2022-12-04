@@ -2,7 +2,7 @@
 #pragma comment(lib, "msimg32.lib")
 
 Image::Image()
-	:imageInfo(NULL), imageFileName(NULL), isTransparent(FALSE), transparentColor(RGB(0, 0, 0))
+	:imageInfo(NULL), imageFileName(NULL), isTransparent(FALSE), visible(TRUE), transparentColor(RGB(0, 0, 0)), style(IMAGE_CHANGE_RESOURCE)
 {
 }
 
@@ -23,8 +23,9 @@ HRESULT Image::Init(int w, int h)
 	imageInfo->hMemDC = CreateCompatibleDC(hdc);  //empty DC
 	imageInfo->hBit = (HBITMAP)CreateCompatibleBitmap(hdc, w, h);
 	imageInfo->hOldbit = (HBITMAP)SelectObject(imageInfo->hMemDC, imageInfo->hBit);
-	imageInfo->W = w;
-	imageInfo->H = h;
+	imageInfo->bitmapWidth = w;
+	imageInfo->bitmapHeight = h;
+	imageInfo->drawArea = { 0,0,w,h };
 
 	if (imageInfo->hBit == NULL)
 	{
@@ -37,43 +38,68 @@ HRESULT Image::Init(int w, int h)
 	return S_OK;
 }
 
-HRESULT Image::Init(const TCHAR* filename, int w, int h, BOOL trans, COLORREF transColor)
+HRESULT Image::Init(DWORD resourceID)
 {
-	return Image::Init(filename, 0, 0, w, h, 1, 1, trans, transColor);
+	return Image::Init(resourceID, 0, 0, 0, 0, 1, 1, FALSE, RGB(255, 0, 255));
 }
 
-HRESULT Image::Init(const TCHAR* filename, int x, int y, int w, int h, BOOL trans, COLORREF transColor)
+HRESULT Image::Init(DWORD resourceID, int x, int y)
 {
-	return Image::Init(filename, x, y, w, h, 1, 1, trans, transColor);
+	return Image::Init(resourceID, x, y, 0, 0, 1, 1, FALSE, RGB(255, 0, 255));
 }
 
-HRESULT Image::Init(const TCHAR* filename, int x, int y, int w, int h, int fx, int fy, BOOL trans, COLORREF transColor)
+HRESULT Image::Init(DWORD resourceID, int x, int y, int w, int h)
+{
+	return Image::Init(resourceID, x, y, w, h, 1, 1, FALSE, RGB(255, 0, 255));
+}
+
+HRESULT Image::Init(DWORD resourceID, int x, int y, int w, int h, int frameAmountX, int frameAmountY)
+{
+	return Image::Init(resourceID, x, y, w, h, frameAmountX, frameAmountY, FALSE, RGB(255, 0, 255));
+}
+
+HRESULT Image::Init(DWORD resourceID, int x, int y, int w, int h, int frameAmountX, int frameAmountY, BOOL trans, COLORREF transColor)
 {
 	if (imageInfo != NULL) Release();
 
 	HDC hdc = GetDC(hRootWindow);
 
 	imageInfo = new IMAGE_INFO;
-	imageInfo->loadType = LOAD_FROM_FILE;
-	imageInfo->resourceID = 0;
+	imageInfo->loadType = LOAD_FROM_RESOURCE;
+	imageInfo->resourceID = resourceID;
 	imageInfo->hMemDC = CreateCompatibleDC(hdc);  //empty DC
-	imageInfo->hBit = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, w, h, LR_LOADFROMFILE);
+
+	if ((style & IMAGE_CHANGE_POS) == 0) x = 0, y = 0;
+	
+	if ((style & IMAGE_CHANGE_SIZE) != 0)
+	{
+		imageInfo->hBit = (HBITMAP)LoadImage(hInst, MAKEINTRESOURCE(resourceID), IMAGE_BITMAP, w, h, LR_DEFAULTCOLOR);
+	}
+	else
+	{
+		imageInfo->hBit = (HBITMAP)LoadImage(hInst, MAKEINTRESOURCE(resourceID), IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE | LR_DEFAULTCOLOR);
+		BITMAP tagBitmap;
+		GetObject(imageInfo->hBit, sizeof(BITMAP), &tagBitmap);
+		w = tagBitmap.bmWidth;
+		h = tagBitmap.bmHeight;
+	}
 	imageInfo->hOldbit = (HBITMAP)SelectObject(imageInfo->hMemDC, imageInfo->hBit);
-	imageInfo->X = x;
-	imageInfo->Y = y;
-	imageInfo->W = w;
-	imageInfo->H = h;
-	imageInfo->frameW = w / fx;
-	imageInfo->frameH = h / fy;
+
+	if ((style & IMAGE_CHANGE_FRAME) == 0)frameAmountX = 1, frameAmountY = 1;
+
+	if ((style & IMAGE_CHANGE_TRANS) == 0) trans = FALSE, transColor = RGB(255, 0, 255);
+
+	imageInfo->targetX = x;
+	imageInfo->targetY = y;
+	imageInfo->bitmapWidth = w;
+	imageInfo->bitmapHeight = h;
+	imageInfo->frameW = w / frameAmountX;
+	imageInfo->frameH = h / frameAmountY;
 	imageInfo->currentFrameX = 0;
 	imageInfo->currentFrameY = 0;
-	imageInfo->maxFrameX = fx - 1;
-	imageInfo->maxFrameY = fy - 1;
-
-	int len = lstrlen(filename);
-
-	imageFileName = new TCHAR[len + 1];
-	_tcscpy_s(imageFileName, static_cast<rsize_t>(len) + 1, filename);
+	imageInfo->maxFrameX = frameAmountX - 1;
+	imageInfo->maxFrameY = frameAmountY - 1;
+	imageInfo->drawArea = { x, y, x + imageInfo->frameW, y + imageInfo->frameH };
 
 	isTransparent = trans;
 	transparentColor = transColor;
@@ -87,6 +113,23 @@ HRESULT Image::Init(const TCHAR* filename, int x, int y, int w, int h, int fx, i
 	ReleaseDC(hRootWindow, hdc);
 
 	return S_OK;
+}
+
+void Image::Resize(int w, int h)
+{
+	if (imageInfo == NULL) return;
+
+	SelectObject(imageInfo->hMemDC, imageInfo->hOldbit);
+	DeleteObject(imageInfo->hBit);
+
+	imageInfo->hBit = (HBITMAP)LoadImage(hInst, MAKEINTRESOURCE(imageInfo->resourceID), IMAGE_BITMAP, w, h, LR_DEFAULTCOLOR);
+
+	imageInfo->hOldbit = (HBITMAP)SelectObject(imageInfo->hMemDC, imageInfo->hBit);
+
+	imageInfo->bitmapWidth = w;
+	imageInfo->bitmapHeight = h;
+	imageInfo->frameW = w / (imageInfo->maxFrameX + 1);
+	imageInfo->frameH = h / (imageInfo->maxFrameY + 1);
 }
 
 void Image::Release()
@@ -107,12 +150,12 @@ void Image::Release()
 
 void Image::Render(HDC hdc)
 {
-	Render(hdc, imageInfo->X, imageInfo->Y, 0, 0, imageInfo->W, imageInfo->H);
+	Render(hdc, imageInfo->targetX, imageInfo->targetY, 0, 0, imageInfo->bitmapWidth, imageInfo->bitmapHeight);
 }
 
 void Image::Render(HDC hdc, int dx, int dy)
 {
-	Render(hdc, dx, dy, 0, 0, imageInfo->W, imageInfo->H);
+	Render(hdc, dx, dy, 0, 0, imageInfo->bitmapWidth, imageInfo->bitmapHeight);
 }
 
 void Image::Render(HDC hdc, int dx, int dy, int sx, int sy, int sw, int sh)
@@ -142,11 +185,11 @@ void Image::Render(HDC hdc, int dx, int dy, int sx, int sy, int sw, int sh)
 	}
 }
 
-void Image::LoopRender(HDC hdc, const LPRECT drawArea, int offsetX, int offsetY)
+void Image::LoopRender(HDC hdc, const LPRECT lpDrawArea, int offsetX, int offsetY)
 {
 
-	if (offsetX < 0)offsetX = imageInfo->W + (offsetX % imageInfo->W);
-	if (offsetY < 0)offsetY = imageInfo->H + (offsetY % imageInfo->H);
+	if (offsetX < 0)offsetX = imageInfo->bitmapWidth +  (offsetX % imageInfo->bitmapWidth);
+	if (offsetY < 0)offsetY = imageInfo->bitmapHeight + (offsetY % imageInfo->bitmapHeight);
 
 	//오프셋 영역을 받아올 변수
 	int sourWidth;
@@ -156,16 +199,16 @@ void Image::LoopRender(HDC hdc, const LPRECT drawArea, int offsetX, int offsetY)
 	RECT rcSour;
 
 	//그려주는 영역을 잡아준다
-	int drawAreaX = drawArea->left;
-	int drawAreaY = drawArea->top;
-	int drawAreaW = drawArea->right - drawAreaX;      //너비
-	int drawAreaH = drawArea->bottom - drawAreaY;     //높이
+	int drawAreaX = lpDrawArea->left;
+	int drawAreaY = lpDrawArea->top;
+	int drawAreaW = lpDrawArea->right - drawAreaX;      //너비
+	int drawAreaH = lpDrawArea->bottom - drawAreaY;     //높이
 
 	//Y축 부터
 	for (int y = 0; y < drawAreaH; y += sourHeight)
 	{
-		rcSour.top = (y + offsetY) % imageInfo->H;
-		rcSour.bottom = imageInfo->H;
+		rcSour.top = (y + offsetY) % imageInfo->bitmapHeight;
+		rcSour.bottom = imageInfo->bitmapHeight;
 
 		sourHeight = rcSour.bottom - rcSour.top;
 
@@ -185,8 +228,8 @@ void Image::LoopRender(HDC hdc, const LPRECT drawArea, int offsetX, int offsetY)
 		//x축
 		for (int x = 0; x < drawAreaW; x += sourWidth)
 		{
-			rcSour.left = (x + offsetX) % imageInfo->W;
-			rcSour.right = imageInfo->W;
+			rcSour.left = (x + offsetX) % imageInfo->bitmapWidth;
+			rcSour.right = imageInfo->bitmapWidth;
 
 			sourWidth = rcSour.right - rcSour.left;
 
@@ -204,5 +247,38 @@ void Image::LoopRender(HDC hdc, const LPRECT drawArea, int offsetX, int offsetY)
 				rcSour.right - rcSour.left,		//가로크기
 				rcSour.bottom - rcSour.top);	//세로크기
 		}
+	}
+}
+
+void Image::FrameRender(HDC hdc, int dx, int dy, int currentFrameX, int currentFrameY)
+{
+	imageInfo->currentFrameX = currentFrameX;
+	imageInfo->currentFrameY = currentFrameY;
+
+	if (isTransparent)
+	{
+		GdiTransparentBlt(
+			hdc,								//복사될 영역의 DC
+			dx,								//복사될 좌표 X
+			dy,								//복사될 좌표 Y
+			imageInfo->frameW,				//복사될 크기(가로)
+			imageInfo->frameH,			//복사될 크기(세로)
+			imageInfo->hMemDC,					//복사해올 DC
+			currentFrameX * imageInfo->frameW,
+			currentFrameY * imageInfo->frameH,	//복사해올 좌표X,Y
+			imageInfo->frameW,				//복사해올 크기
+			imageInfo->frameH,			//복사해올 크기
+			transparentColor);						//복사해올때 어떤 컬러를 빼고 가져올꺼냐
+	}
+	else
+	{
+		//백버퍼에 있는 것을 DC영역으로 고속복사해주는 함수
+		BitBlt(hdc, dx, dy,
+			imageInfo->frameW,
+			imageInfo->frameH,
+			imageInfo->hMemDC,
+			currentFrameX * imageInfo->frameW,
+			currentFrameY * imageInfo->frameH,
+			SRCCOPY);
 	}
 }

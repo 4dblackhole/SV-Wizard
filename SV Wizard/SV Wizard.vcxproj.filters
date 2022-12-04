@@ -16,6 +16,12 @@
     <Filter Include="ResourceManager">
       <UniqueIdentifier>{2cad9afb-49cf-477c-b019-101f4ce253da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{5a2b6e8a-de01-4797-af03-1a35d4247e86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{a1fddbfc-7d8e-48fd-ab66-ee7de8a73c3e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -39,6 +45,12 @@
     <ClInclude Include="ResourceManager\Image.h">
       <Filter>ResourceManager</Filter>
     </ClInclude>
+    <ClInclude Include="Utilities\MyShortCuts.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\BackGround.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SV Wizard.cpp">
@@ -49,6 +61,12 @@
     </ClCompile>
     <ClCompile Include="ResourceManager\Image.cpp">
       <Filter>ResourceManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Utilities\MyShortCuts.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\BackGround.cpp">
+      <Filter>Objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,7 +81,10 @@
     <Image Include="SV Wizard.ico">
       <Filter>리소스 파일</Filter>
     </Image>
-    <Image Include="..\..\Resources\Youmu.ico">
+    <Image Include="Resources\Youmu.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="Resources\youmuBG.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
   </ItemGroup>

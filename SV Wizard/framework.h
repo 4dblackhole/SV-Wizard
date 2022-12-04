@@ -10,6 +10,7 @@
 #include <windows.h>
 // C 런타임 헤더 파일입니다.
 #include <assert.h>
+#include <cmath>
 #include <cstdio>
 #include <malloc.h>
 #include <map>
@@ -23,6 +24,11 @@
 #include <iostream>
 using namespace std;
 
+#include "ResourceManager/Image.h"
+#include "Utilities/MyShortCuts.h"
+
+#define SHORTCUT ShortCut::GetInstance()
+
 #ifdef _UNICODE
 #define tstring wstring
 #else
@@ -32,4 +38,4 @@ using namespace std;
 #define SAFE_DELETE(p) { if(p) {delete(p); (p) = NULL; }}
 
 extern HWND hRootWindow; //Handle of Main Window
-extern HINSTANCE hInst;  
+extern HINSTANCE hInst;

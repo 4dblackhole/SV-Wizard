@@ -1,7 +1,6 @@
 #pragma once
 #include "SingletonBase.h"
 #include "Image.h"
-#include "framework.h"
 
 class ImageManager : public SingletonBase<ImageManager>
 {

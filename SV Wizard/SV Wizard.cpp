@@ -73,10 +73,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_YOUMU_ICON01));
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_YOUMUICON1));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = NULL; //MAKEINTRESOURCEW(IDC_SVWIZARD);
+    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_SVWIZARD);
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = NULL; //LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -123,19 +123,38 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - 종료 메시지를 게시하고 반환합니다.
 //
 //
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static PAINTSTRUCT ps;
     static HDC hdc;
 
+    static Image youmuImg;
+    static BackGround BG;
+
+    static TCHAR sss[128];
+
     switch (message)
     {
     case WM_CREATE:
         {
-
-
+        youmuImg.Init(IDB_YOUMUBG);
+        BG.Init(hWnd, &youmuImg);
         }
         break;
+
+    case WM_SIZING:
+        {
+        BG.Resizing(wParam, lParam);
+        }
+        break;
+
+    case WM_SIZE:
+        {
+        BG.Resize(wParam, lParam);
+        }
+        break;
+
     case WM_COMMAND:
         {
             // 메뉴 선택을 구문 분석합니다:
@@ -155,12 +174,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_PAINT:
         {
             hdc = BeginPaint(hWnd, &ps);
-
+            BG.Render(hdc);
+            RECT crt;
+            GetClientRect(hWnd, &crt);
+            wsprintf(sss, _T("%d %d"), crt.right, crt.bottom);
+            TextOut(hdc, 10, 10, sss, lstrlen(sss));
 
             EndPaint(hWnd, &ps);
         }
         break;
     case WM_DESTROY:
+        youmuImg.Release();
         PostQuitMessage(0);
         break;
     default:

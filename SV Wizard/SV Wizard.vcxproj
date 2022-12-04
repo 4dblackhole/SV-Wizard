@@ -131,23 +131,28 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Objects\BackGround.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceManager\Image.h" />
     <ClInclude Include="ResourceManager\ImageManager.h" />
     <ClInclude Include="ResourceManager\SingletonBase.h" />
     <ClInclude Include="SV Wizard.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Utilities\MyShortCuts.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Objects\BackGround.cpp" />
     <ClCompile Include="ResourceManager\Image.cpp" />
     <ClCompile Include="ResourceManager\ImageManager.cpp" />
     <ClCompile Include="SV Wizard.cpp" />
+    <ClCompile Include="Utilities\MyShortCuts.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SV Wizard.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\Resources\Youmu.ico" />
+    <Image Include="Resources\Youmu.ico" />
+    <Image Include="Resources\youmuBG.bmp" />
     <Image Include="small.ico" />
     <Image Include="SV Wizard.ico" />
   </ItemGroup>
