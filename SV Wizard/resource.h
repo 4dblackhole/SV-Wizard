@@ -14,6 +14,25 @@
 #define IDR_MAINFRAME                   128
 #define IDI_YOUMUICON1                  129
 #define IDB_YOUMUBG                     130
+#define IDD_SVWIZARD                    133
+#define IDC_SPIN_STARTSV                1004
+#define IDC_SPIN_ENDSV                  1005
+#define IDC_EDIT_STARTSV                1006
+#define IDC_EDIT_ENDSV                  1007
+#define IDC_SPIN_VOLUME                 1008
+#define IDC_EDIT_VOLUME                 1009
+#define IDC_KIAI_AUTO                   1014
+#define IDC_KIAI_ON                     1015
+#define IDC_KIAI_OFF                    1016
+#define IDC_VOLUME_AUTO                 1017
+#define IDC_VOLUME_CHANGE               1018
+#define IDC_RADIO_SVTYPE_LINEAR         1019
+#define IDC_RADIO_SVTYPE_EXP            1020
+#define IDC_RADIO_SVTYPE_FOC            1021
+#define IDC_STATIC_MAPNAME              1022
+#define IDC_GROUP_SVTYPE                1023
+#define IDC_GROUP_KIAI                  1024
+#define IDC_GROUP_VOLUME                1025
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -26,9 +45,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        133
+#define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1026
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

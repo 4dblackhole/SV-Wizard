@@ -17,6 +17,7 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    SVWProc(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -131,8 +132,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     static Image youmuImg;
     static BackGround BG;
+    static SVDialog Dialog;
 
-    static TCHAR sss[128];
+    static POINT moustPt = { 0,0 };
+    static TCHAR sss[256];
 
     switch (message)
     {
@@ -140,6 +143,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
         youmuImg.Init(IDB_YOUMUBG);
         BG.Init(hWnd, &youmuImg);
+        Dialog.Init(hInst, IDD_SVWIZARD, hWnd);
+
         }
         break;
 
@@ -155,6 +160,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+    case WM_MOVE:
+        {
+        Dialog.Move();
+        }
+        break;
+
+    case WM_MOUSEMOVE:
+        {
+        moustPt.x = LOWORD(lParam);
+        moustPt.y = HIWORD(lParam);
+        InvalidateRect(hWnd, NULL, FALSE);
+        }
+        break;
     case WM_COMMAND:
         {
             // 메뉴 선택을 구문 분석합니다:
@@ -177,8 +195,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             BG.Render(hdc);
             RECT crt;
             GetClientRect(hWnd, &crt);
-            wsprintf(sss, _T("%d %d"), crt.right, crt.bottom);
-            TextOut(hdc, 10, 10, sss, lstrlen(sss));
+            wsprintf(sss, _T("Client Area : %d x %d\nMouse PT : %d %d"), crt.right, crt.bottom, moustPt.x, moustPt.y);
+            DrawText(hdc, sss, lstrlen(sss), &crt, DT_LEFT);
 
             EndPaint(hWnd, &ps);
         }
@@ -192,6 +210,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
+
+/*INT_PTR CALLBACK SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    static HDC hdc;
+    static PAINTSTRUCT ps;
+    UNREFERENCED_PARAMETER(lParam);
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        SetWindowLongPtr(hDlg, GWL_STYLE, 0); 
+        SendMessage(GetDlgItem(hDlg, IDC_RADIO_SVTYPE_EXP), BM_SETCHECK, BST_CHECKED, 1);
+        SendMessage(GetDlgItem(hDlg, IDC_VOLUME_AUTO), BM_SETCHECK, BST_CHECKED, 1);
+        SendMessage(GetDlgItem(hDlg, IDC_KIAI_AUTO), BM_SETCHECK, BST_CHECKED, 1);
+        return (INT_PTR)TRUE;
+
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        }
+        break;
+    }
+    return (INT_PTR)FALSE;
+}*/
 
 // 정보 대화 상자의 메시지 처리기입니다.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)

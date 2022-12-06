@@ -51,6 +51,9 @@
     <ClInclude Include="Objects\BackGround.h">
       <Filter>Objects</Filter>
     </ClInclude>
+    <ClInclude Include="SVDialog.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SV Wizard.cpp">
@@ -67,6 +70,9 @@
     </ClCompile>
     <ClCompile Include="Objects\BackGround.cpp">
       <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="SVDialog.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
