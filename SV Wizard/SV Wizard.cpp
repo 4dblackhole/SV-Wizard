@@ -128,7 +128,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static PAINTSTRUCT ps;
-    static HDC hdc;
+    static HDC hdc, hMemDC;
 
     static Image youmuImg, nmImg;
     static BackGround BG;
@@ -196,13 +196,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_PAINT:
         {
-            hdc = BeginPaint(hWnd, &ps);
-            BG.Render(hdc);
             RECT crt;
+            HBITMAP backBit, oldBackBit;
             GetClientRect(hWnd, &crt);
-            wsprintf(sss, _T("Client Area : %d x %d\nMouse PT : %d %d"), crt.right, crt.bottom, moustPt.x, moustPt.y);
-            DrawText(hdc, sss, lstrlen(sss), &crt, DT_LEFT);
+            int width = crt.right - crt.left;
+            int height = crt.bottom - crt.top;
 
+            hdc = BeginPaint(hWnd, &ps);
+            hMemDC = CreateCompatibleDC(hdc);
+            backBit = CreateCompatibleBitmap(hdc, width, height);
+            oldBackBit = (HBITMAP)SelectObject(hMemDC, backBit);
+
+            BG.Render(hMemDC);
+            wsprintf(sss, _T("Client Area : %d x %d\nMouse PT : %d %d"), crt.right, crt.bottom, moustPt.x, moustPt.y);
+            DrawText(hMemDC, sss, lstrlen(sss), &crt, DT_LEFT);
+
+            BitBlt(hdc, 0, 0, width, height, hMemDC, 0, 0, SRCCOPY);
+            
+
+            SelectObject(hMemDC, oldBackBit);
+            DeleteObject(backBit);
+            DeleteDC(hMemDC);
             EndPaint(hWnd, &ps);
         }
         break;

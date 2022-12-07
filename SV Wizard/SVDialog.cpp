@@ -122,8 +122,6 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
-        case IDC_EDIT_STARTSV:
-            break;
         case IDC_RADIO_SVTYPE_LINEAR: svType = SV_LINEAR; break;
         case IDC_RADIO_SVTYPE_EXP: svType = SV_EXP; break;
         case IDC_RADIO_SVTYPE_FOCUS: svType = SV_FOCUS; break;
