@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <cmath>
 #include <cstdio>
+#include <functional>
 #include <malloc.h>
 #include <map>
 #include <memory.h>

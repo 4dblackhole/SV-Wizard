@@ -153,6 +153,7 @@
     <ResourceCompile Include="SV Wizard.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Resources\nightmareBG.bmp" />
     <Image Include="Resources\Youmu.ico" />
     <Image Include="Resources\youmuBG.bmp" />
     <Image Include="small.ico" />

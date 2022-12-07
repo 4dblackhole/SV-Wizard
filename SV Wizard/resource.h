@@ -15,6 +15,8 @@
 #define IDI_YOUMUICON1                  129
 #define IDB_YOUMUBG                     130
 #define IDD_SVWIZARD                    133
+#define IDB_NIGHTMAREBG                 134
+#define IDR_SVWIAZRDLOCATE              135
 #define IDC_SPIN_STARTSV                1004
 #define IDC_SPIN_ENDSV                  1005
 #define IDC_EDIT_STARTSV                1006
@@ -38,6 +40,14 @@
 #define ID_32773                        32773
 #define IDM_LOAD                        32776
 #define IDM_SAVE                        32777
+#define ID_DIALOG_MOVE                  32780
+#define ID_MOVE_TOPLEFT                 32781
+#define ID_MOVE_TOPCENTER               32782
+#define ID_MOVE_TOPRIGHT                32783
+#define ID_LOCATE                       32784
+#define ID_LOCATE_TOPLEFT               32785
+#define ID_LOCATE_TOPCENTER             32786
+#define ID_LOCATE_TOPRIGHT              32787
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -45,8 +55,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        134
-#define _APS_NEXT_COMMAND_VALUE         32780
+#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_COMMAND_VALUE         32788
 #define _APS_NEXT_CONTROL_VALUE         1026
 #define _APS_NEXT_SYMED_VALUE           110
 #endif

@@ -130,9 +130,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static PAINTSTRUCT ps;
     static HDC hdc;
 
-    static Image youmuImg;
+    static Image youmuImg, nmImg;
     static BackGround BG;
-    static SVDialog Dialog;
 
     static POINT moustPt = { 0,0 };
     static TCHAR sss[256];
@@ -141,10 +140,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
         {
-        youmuImg.Init(IDB_YOUMUBG);
-        BG.Init(hWnd, &youmuImg);
-        Dialog.Init(hInst, IDD_SVWIZARD, hWnd);
+        Dialog.Init(IDD_SVWIZARD, hWnd);
 
+        youmuImg.Init(IDB_YOUMUBG);
+        nmImg.Init(IDB_NIGHTMAREBG);
+        BG.SetBackGround(hWnd, &youmuImg);
+        BG.SetBGMinX(double(Dialog.GetDialogWidth() + 100));
+        BG.SetBGMinY(double(Dialog.GetDialogHeight() + 100));
         }
         break;
 
@@ -157,6 +159,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
         {
         BG.Resize(wParam, lParam);
+        Dialog.Move();
         }
         break;
 
@@ -173,6 +176,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         InvalidateRect(hWnd, NULL, FALSE);
         }
         break;
+
     case WM_COMMAND:
         {
             // 메뉴 선택을 구문 분석합니다:
@@ -189,6 +193,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+
     case WM_PAINT:
         {
             hdc = BeginPaint(hWnd, &ps);
@@ -210,31 +215,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
-
-/*INT_PTR CALLBACK SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    static HDC hdc;
-    static PAINTSTRUCT ps;
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        SetWindowLongPtr(hDlg, GWL_STYLE, 0); 
-        SendMessage(GetDlgItem(hDlg, IDC_RADIO_SVTYPE_EXP), BM_SETCHECK, BST_CHECKED, 1);
-        SendMessage(GetDlgItem(hDlg, IDC_VOLUME_AUTO), BM_SETCHECK, BST_CHECKED, 1);
-        SendMessage(GetDlgItem(hDlg, IDC_KIAI_AUTO), BM_SETCHECK, BST_CHECKED, 1);
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
-}*/
 
 // 정보 대화 상자의 메시지 처리기입니다.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)

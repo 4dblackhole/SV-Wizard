@@ -93,6 +93,9 @@
     <Image Include="Resources\youmuBG.bmp">
       <Filter>리소스 파일</Filter>
     </Image>
+    <Image Include="Resources\nightmareBG.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

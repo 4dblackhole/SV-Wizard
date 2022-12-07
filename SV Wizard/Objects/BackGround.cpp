@@ -1,6 +1,6 @@
 #include "BackGround.h"
 
-BackGround::BackGround() :image(NULL), origHeight(0), origWidth(0)
+BackGround::BackGround() :image(NULL), origHeight(0), origWidth(0), targetWnd(0)
 {
 }
 
@@ -8,7 +8,7 @@ BackGround::~BackGround()
 {
 }
 
-void BackGround::Init(HWND hWnd, Image* img)
+void BackGround::SetBackGround(HWND hWnd, Image* img)
 {
     image = img;
     targetWnd = hWnd;
@@ -58,22 +58,31 @@ void BackGround::Resizing(WPARAM wParam, LPARAM lParam)
 
     int width, height;
 
-    width = ((double)origWidth * BGMinRate) + border;
-    height = ((double)origHeight * BGMinRate) + header;
-
     //Minimum size
+
+    BGMinRate = max(BGMinXPixel / (double)origWidth, BGMinYPixel / (double)origHeight);
+
+    width = (int)((double)origWidth * BGMinRate) + border;
+    height = (int)((double)origHeight * BGMinRate) + header;
+
     if (lprc->right - lprc->left < width)
         lprc->right = lprc->left + width;
 
     if (lprc->bottom - lprc->top < height)
         lprc->bottom = lprc->top + height;
+    
+    // Maximum size
 
-    // Maximum width
-    if (lprc->right - lprc->left > 1440 + border)
-        lprc->right = lprc->left + 1440 + border;
+    BGMaxRate = min(BGMaxXPixel / (double)origWidth, BGMaxYPixel / (double)origHeight);
 
-    if (lprc->bottom - lprc->top > 960 + header)
-        lprc->bottom = lprc->top + 960 + header;
+    width = (int)((double)origWidth * BGMaxRate) + border;
+    height = (int)((double)origHeight * BGMaxRate) + header;
+
+    if (lprc->right - lprc->left > width)
+        lprc->right = lprc->left + width;
+
+    if (lprc->bottom - lprc->top > height)
+        lprc->bottom = lprc->top + height;
 
     width = lprc->right - lprc->left;
     height = lprc->bottom - lprc->top;
@@ -83,7 +92,7 @@ void BackGround::Resizing(WPARAM wParam, LPARAM lParam)
         case WMSZ_LEFT:
         case WMSZ_RIGHT:
         {
-            height = ((width - border) * ((double)origHeight / (double)origWidth)) + header;
+            height = (int)((double)(width - border) * ((double)origHeight / (double)origWidth)) + header;
             lprc->bottom = lprc->top + height;
         }
         break;
@@ -92,7 +101,7 @@ void BackGround::Resizing(WPARAM wParam, LPARAM lParam)
         case WMSZ_BOTTOM:
         default:
         {
-            width = ((height - header) * ((double)origWidth / (double)origHeight)) + border;
+            width = (int)((double)(height - header) * ((double)origWidth / (double)origHeight)) + border;
             lprc->right = lprc->left + width;
         }
         break;
