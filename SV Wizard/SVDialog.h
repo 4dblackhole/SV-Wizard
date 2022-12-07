@@ -34,13 +34,6 @@ public:
 		SV_MAX
 	};
 
-	enum VOLUMETYPE
-	{
-		VOLUME_AUTO,
-		VOLUME_CHANGE,
-		VOLUME_MAX
-	};
-
 	void Init(DWORD dialogID, HWND hWndParent);
 	void Move();
 
@@ -62,11 +55,10 @@ private:
 	SORTTYPE sortType;
 	double startSV, endSV;
 	int kiaiType, svType, volume;
+	int startPos, endPos;
 	BOOL volumeAuto;
 
 	INT_PTR CALLBACK SVWProc(HWND, UINT, WPARAM, LPARAM);
-	//static INT_PTR CALLBACK SVWProc(HWND, UINT, WPARAM, LPARAM);
-
 	static INT_PTR CALLBACK SVWProcWrapper(HWND, UINT, WPARAM, LPARAM);
 };
 

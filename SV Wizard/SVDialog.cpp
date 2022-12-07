@@ -10,9 +10,12 @@ SVDialog::SVDialog()
     startSV = endSV = 1.0L;
     kiaiType = KIAI_AUTO;
     svType = SV_EXP;
-    volume = VOLUME_AUTO;
+    volume = 100;
     volumeAuto = TRUE;
     sortType = SORT_TOPRIGHT;
+
+    startPos = endPos = 0;
+
 }
 
 SVDialog::~SVDialog()
@@ -78,6 +81,8 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 
     static HMENU hMenu, hPopup;
 
+    static TCHAR t[128];
+
     UNREFERENCED_PARAMETER(lParam);
     switch (message)
     {
@@ -87,7 +92,15 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
         SendMessage(GetDlgItem(hDlg, IDC_RADIO_SVTYPE_EXP), BM_SETCHECK, BST_CHECKED, 1);
         SendMessage(GetDlgItem(hDlg, IDC_VOLUME_AUTO), BM_SETCHECK, BST_CHECKED, 1);
         SendMessage(GetDlgItem(hDlg, IDC_KIAI_AUTO), BM_SETCHECK, BST_CHECKED, 1);
-        //SendMessage(GetDlgItem(hDlg, IDC_EDIT_STARTSV),EM_)
+
+        _stprintf_s(t, _T("%.lf"), startSV);
+        SetWindowText(GetDlgItem(hDlg, IDC_EDIT_STARTSV), t);
+
+        _stprintf_s(t, _T("%.lf"), endSV);
+        SetWindowText(GetDlgItem(hDlg, IDC_EDIT_ENDSV), t);
+
+        _stprintf_s(t, _T("%d"), volume);
+        SetWindowText(GetDlgItem(hDlg, IDC_EDIT_VOLUME), t);
         }
         return (INT_PTR)TRUE;
 
@@ -109,23 +122,35 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
+        case IDC_EDIT_STARTSV:
+            break;
+        case IDC_RADIO_SVTYPE_LINEAR: svType = SV_LINEAR; break;
+        case IDC_RADIO_SVTYPE_EXP: svType = SV_EXP; break;
+        case IDC_RADIO_SVTYPE_FOCUS: svType = SV_FOCUS; break;
+
+        case IDC_KIAI_AUTO: kiaiType = KIAI_AUTO; break;
+        case IDC_KIAI_ON: kiaiType = KIAI_ON; break;
+        case IDC_KIAI_OFF: kiaiType = KIAI_OFF; break;
+
+        case IDC_VOLUME_AUTO: volumeAuto = TRUE; break;
+        case IDC_VOLUME_CHANGE: volumeAuto = FALSE; break;
+
         case ID_LOCATE_TOPLEFT: 
             {
             sortType = SORT_TOPLEFT; 
-            SendMessage(parentWindow, WM_MOVE, 0, 0);
+            Move();
             }
             break;
         case ID_LOCATE_TOPCENTER: 
             {
             sortType = SORT_TOPCENTER;
-            SendMessage(parentWindow, WM_MOVE, 0, 0);
-
+            Move();
             }
             break;
         case ID_LOCATE_TOPRIGHT: 
             {
             sortType = SORT_TOPRIGHT;
-            SendMessage(parentWindow, WM_MOVE, 0, 0);
+            Move();
             }
             break;
         case IDOK:

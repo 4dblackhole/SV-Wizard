@@ -23,6 +23,10 @@
 #define IDC_EDIT_ENDSV                  1007
 #define IDC_SPIN_VOLUME                 1008
 #define IDC_EDIT_VOLUME                 1009
+#define IDC_SPIN_ENDSV_SMALL            1010
+#define IDC_SPIN_STARTSV_SMALL          1011
+#define IDC_SPIN_VOLUME_SMALL           1012
+#define IDC_SPIN_STARTSV2               1013
 #define IDC_KIAI_AUTO                   1014
 #define IDC_KIAI_ON                     1015
 #define IDC_KIAI_OFF                    1016
@@ -31,10 +35,18 @@
 #define IDC_RADIO_SVTYPE_LINEAR         1019
 #define IDC_RADIO_SVTYPE_EXP            1020
 #define IDC_RADIO_SVTYPE_FOC            1021
+#define IDC_RADIO_SVTYPE_FOCUS          1021
 #define IDC_STATIC_MAPNAME              1022
 #define IDC_GROUP_SVTYPE                1023
 #define IDC_GROUP_KIAI                  1024
 #define IDC_GROUP_VOLUME                1025
+#define IDC_BUTTON1                     1026
+#define IDC_EDIT_STARTSV2               1027
+#define IDC_SLIDER_VOLUME               1028
+#define IDC_SPIN_ENDSV2                 1029
+#define IDC_EDIT_ENDSV2                 1030
+#define IDC_SPIN_ENDSV_SMALL2           1031
+#define IDC_SPIN_STARTSV_SMALL2         1032
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -57,7 +69,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         32788
-#define _APS_NEXT_CONTROL_VALUE         1026
+#define _APS_NEXT_CONTROL_VALUE         1029
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
