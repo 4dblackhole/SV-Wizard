@@ -4,4 +4,4 @@
 #include "Objects/BackGround.h"
 #include "SVDialog.h"
 
-SVDialog Dialog;
+void OpenFileDirectory(TCHAR*, SVDialog&);

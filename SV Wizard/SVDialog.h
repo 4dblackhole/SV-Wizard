@@ -39,12 +39,22 @@ public:
 
 	void Release();
 
+	inline HWND GetWindow() { return dialogWindow; }
+
 	inline BOOL GetVisible() { return visible; }
 	inline int GetDialogWidth() { return (dlgWrt.right - dlgWrt.left); }
 	inline int GetDialogHeight() { return (dlgWrt.bottom - dlgWrt.top); }
 
 	inline SORTTYPE GetSortType() { return sortType; }
 	inline void SetSortType(SORTTYPE a) { sortType = a; }
+
+	inline int GetKiaiType() { return kiaiType; }
+	inline int GetSVType() { return svType; }
+	inline int GetVolume() { return volume; }
+
+	inline const TCHAR* ReadFileDirectory() { return fileDirectory; }
+	void SetFileDirectory(const TCHAR*);
+
 
 private:
 	HWND parentWindow;
@@ -57,6 +67,8 @@ private:
 	int kiaiType, svType, volume;
 	int startPos, endPos;
 	BOOL volumeAuto;
+
+	TCHAR fileDirectory[MAX_PATH];
 
 	INT_PTR CALLBACK SVWProc(HWND, UINT, WPARAM, LPARAM);
 	static INT_PTR CALLBACK SVWProcWrapper(HWND, UINT, WPARAM, LPARAM);

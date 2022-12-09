@@ -12,6 +12,8 @@ TCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입
 TCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 HWND hRootWindow;
 
+TCHAR osuFilter[] = _T("osu Files\0*.osu\0");
+
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -114,17 +116,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-//
-//  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  용도: 주 창의 메시지를 처리합니다.
-//
-//  WM_COMMAND  - 애플리케이션 메뉴를 처리합니다.
-//  WM_PAINT    - 주 창을 그립니다.
-//  WM_DESTROY  - 종료 메시지를 게시하고 반환합니다.
-//
-//
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static PAINTSTRUCT ps;
@@ -132,9 +123,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     static Image youmuImg, nmImg;
     static BackGround BG;
+    static SVDialog Dialog;
 
     static POINT moustPt = { 0,0 };
-    static TCHAR sss[256];
+    static TCHAR sss[512];
+
+    static TCHAR fileDirectory[MAX_PATH] = _T("");
 
     switch (message)
     {
@@ -182,6 +176,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // 메뉴 선택을 구문 분석합니다:
             switch (LOWORD(wParam))
             {
+            case IDM_LOAD:
+                {
+                OpenFileDirectory(fileDirectory, Dialog);
+                }
+                break; 
             case IDM_ABOUT:
                 DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
                 break;
@@ -206,14 +205,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             hMemDC = CreateCompatibleDC(hdc);
             backBit = CreateCompatibleBitmap(hdc, width, height);
             oldBackBit = (HBITMAP)SelectObject(hMemDC, backBit);
+            // PAINT START ======================================================
 
             BG.Render(hMemDC);
-            wsprintf(sss, _T("Client Area : %d x %d\nMouse PT : %d %d"), crt.right, crt.bottom, moustPt.x, moustPt.y);
+            wsprintf(sss, _T("Client Area : %d x %d\nMouse PT : %d %d\nKiai %d, SV %d, Volume %d"),
+                crt.right, crt.bottom, moustPt.x, moustPt.y, Dialog.GetKiaiType(), Dialog.GetSVType(), Dialog.GetVolume());
             DrawText(hMemDC, sss, lstrlen(sss), &crt, DT_LEFT);
 
             BitBlt(hdc, 0, 0, width, height, hMemDC, 0, 0, SRCCOPY);
             
-
+            // PAINT END ========================================================
             SelectObject(hMemDC, oldBackBit);
             DeleteObject(backBit);
             DeleteDC(hMemDC);
@@ -248,4 +249,27 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+void OpenFileDirectory(TCHAR* dir, SVDialog& dialog)
+{
+    TCHAR tempStr[300];
+    OPENFILENAME OFN;
+
+    memset(&OFN, 0, sizeof(OPENFILENAME));
+    OFN.lStructSize = sizeof(OPENFILENAME);
+    OFN.hwndOwner = hRootWindow;
+    OFN.lpstrFilter = osuFilter;
+    OFN.lpstrFile = dir;
+    OFN.nMaxFile = MAX_PATH;
+    OFN.lpstrInitialDir = L".";
+
+    if (GetOpenFileName(&OFN) != 0)
+    {
+        wsprintf(tempStr, L"☆ %s ☆ has selected, Want to open?", OFN.lpstrFile);
+        if (MessageBox(hRootWindow, tempStr, L"OPEN?", MB_YESNO) == IDYES)
+        {
+            //TODO: send directory TCHAR to Dialog
+        }
+    }
 }

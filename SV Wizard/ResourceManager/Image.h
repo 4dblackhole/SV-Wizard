@@ -1,5 +1,5 @@
 #pragma once
-#include "framework.h"
+#include "../framework.h"
 
 #define IMAGE_CHANGE_POS		(0x1 << 0)
 #define IMAGE_CHANGE_SIZE		(0x1 << 1)

@@ -22,6 +22,9 @@
     <Filter Include="Objects">
       <UniqueIdentifier>{a1fddbfc-7d8e-48fd-ab66-ee7de8a73c3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System">
+      <UniqueIdentifier>{dabb03ba-0f2e-4aac-8a9a-6fc210d1718d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">

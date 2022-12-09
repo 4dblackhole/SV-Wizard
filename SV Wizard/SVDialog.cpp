@@ -16,6 +16,7 @@ SVDialog::SVDialog()
 
     startPos = endPos = 0;
 
+    SetFileDirectory(_T("Not Selected"));
 }
 
 SVDialog::~SVDialog()
@@ -72,6 +73,11 @@ void SVDialog::Move()
 
 void SVDialog::Release()
 {
+}
+
+void SVDialog::SetFileDirectory(const TCHAR* str)
+{
+    _stprintf_s(fileDirectory, str);
 }
 
 INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)

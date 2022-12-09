@@ -11,6 +11,7 @@
 // C 런타임 헤더 파일입니다.
 #include <assert.h>
 #include <cmath>
+#include <commdlg.h>
 #include <cstdio>
 #include <functional>
 #include <malloc.h>
@@ -40,3 +41,4 @@ using namespace std;
 
 extern HWND hRootWindow; //Handle of Main Window
 extern HINSTANCE hInst;
+extern TCHAR osuFilter[];

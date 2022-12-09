@@ -41,12 +41,15 @@
 #define IDC_GROUP_KIAI                  1024
 #define IDC_GROUP_VOLUME                1025
 #define IDC_BUTTON1                     1026
+#define IDC_GENERATE                    1026
 #define IDC_EDIT_STARTSV2               1027
 #define IDC_SLIDER_VOLUME               1028
 #define IDC_SPIN_ENDSV2                 1029
 #define IDC_EDIT_ENDSV2                 1030
 #define IDC_SPIN_ENDSV_SMALL2           1031
 #define IDC_SPIN_STARTSV_SMALL2         1032
+#define IDC_CHECK_BASEBPM               1033
+#define IDC_EDIT_BASEBPM                1034
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -69,7 +72,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         32788
-#define _APS_NEXT_CONTROL_VALUE         1029
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
