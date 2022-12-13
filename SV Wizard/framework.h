@@ -11,6 +11,7 @@
 // C 런타임 헤더 파일입니다.
 #include <assert.h>
 #include <cmath>
+#include <commctrl.h>
 #include <commdlg.h>
 #include <cstdio>
 #include <functional>
@@ -37,7 +38,8 @@ using namespace std;
 #define tstring string
 #endif
 
-#define SAFE_DELETE(p) { if(p) {delete(p); (p) = NULL; }}
+#define SAFE_DELETE(p)		{ if(p) {delete (p); (p) = NULL; }}
+#define SAFE_DELETE_ARR(p)	{ if(p) {delete[] (p); (p) = NULL; }}
 
 extern HWND hRootWindow; //Handle of Main Window
 extern HINSTANCE hInst;

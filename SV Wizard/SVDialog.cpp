@@ -15,8 +15,8 @@ SVDialog::SVDialog()
     sortType = SORT_TOPRIGHT;
 
     startPos = endPos = 0;
-
-    SetFileDirectory(_T("Not Selected"));
+   
+    dlg_Ctr = NULL;
 }
 
 SVDialog::~SVDialog()
@@ -29,7 +29,6 @@ void SVDialog::Init(DWORD dialogID, HWND hWndParent)
     dialogWindow = CreateDialogParam(hInst, MAKEINTRESOURCE(dialogID), hWndParent, SVWProcWrapper, reinterpret_cast<LPARAM>(this));
     GetWindowRect(dialogWindow, &dlgWrt);
     GetClientRect(dialogWindow, &dlgCrt);
-
     ShowWindow(dialogWindow, visible);
 }
 
@@ -73,11 +72,7 @@ void SVDialog::Move()
 
 void SVDialog::Release()
 {
-}
-
-void SVDialog::SetFileDirectory(const TCHAR* str)
-{
-    _stprintf_s(fileDirectory, str);
+    SAFE_DELETE(dlg_Ctr);
 }
 
 INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -94,19 +89,7 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
     {
     case WM_INITDIALOG:
         {
-        SetWindowLongPtr(hDlg, GWL_STYLE, 0);
-        SendMessage(GetDlgItem(hDlg, IDC_RADIO_SVTYPE_EXP), BM_SETCHECK, BST_CHECKED, 1);
-        SendMessage(GetDlgItem(hDlg, IDC_VOLUME_AUTO), BM_SETCHECK, BST_CHECKED, 1);
-        SendMessage(GetDlgItem(hDlg, IDC_KIAI_AUTO), BM_SETCHECK, BST_CHECKED, 1);
-
-        _stprintf_s(t, _T("%.lf"), startSV);
-        SetWindowText(GetDlgItem(hDlg, IDC_EDIT_STARTSV), t);
-
-        _stprintf_s(t, _T("%.lf"), endSV);
-        SetWindowText(GetDlgItem(hDlg, IDC_EDIT_ENDSV), t);
-
-        _stprintf_s(t, _T("%d"), volume);
-        SetWindowText(GetDlgItem(hDlg, IDC_EDIT_VOLUME), t);
+        InitDialogControlHandles(dlg_Ctr, hDlg);
         }
         return (INT_PTR)TRUE;
 
@@ -125,9 +108,24 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
         }
         break;
 
+    case WM_HSCROLL:
+        {
+            if ((HWND)lParam == dlg_Ctr->hslVolume)
+            {
+                volume = (int)SendMessage(dlg_Ctr->hslVolume, TBM_GETPOS, 0, 0);
+                SetEditVolume(dlg_Ctr->heVolume, volume);
+            }
+        }
+        break;
+
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
+        case IDC_SPIN_STARTTIMING:
+            {
+            int a = 1;
+            }
+            break;
         case IDC_RADIO_SVTYPE_LINEAR: svType = SV_LINEAR; break;
         case IDC_RADIO_SVTYPE_EXP: svType = SV_EXP; break;
         case IDC_RADIO_SVTYPE_FOCUS: svType = SV_FOCUS; break;
@@ -186,4 +184,94 @@ INT_PTR SVDialog::SVWProcWrapper(HWND hDlg, UINT message, WPARAM wParam, LPARAM 
     if (cls) return cls->SVWProc(hDlg, message, wParam, lParam);
 
     return FALSE;
+}
+
+void SVDialog::SetEditVolume(HWND hVolume, int v)
+{
+    if (v > 100) v = 100;
+    if (v < 0)v = 0;
+    TCHAR t[10];
+    _stprintf_s(t, _T("%d"), volume);
+    SetWindowText(hVolume, t);
+}
+
+void SVDialog::InitDialogControlHandles(LPControls& dlg_Ctr, HWND hDlg)
+{
+    TCHAR t[128];
+
+    // window handle Init
+    SAFE_DELETE(dlg_Ctr);
+    dlg_Ctr = new Controls;
+
+    dlg_Ctr->hstFileDir = GetDlgItem(hDlg, IDC_STATIC_MAPNAME);
+    dlg_Ctr->hbBaseBPM = GetDlgItem(hDlg, IDC_CHECK_BASEBPM);
+
+    dlg_Ctr->heStartSV = GetDlgItem(hDlg, IDC_EDIT_STARTSV);
+    dlg_Ctr->heEndSV = GetDlgItem(hDlg, IDC_EDIT_ENDSV);
+    dlg_Ctr->heStartTiming = GetDlgItem(hDlg, IDC_EDIT_STARTTIMING);
+    dlg_Ctr->heEndTiming = GetDlgItem(hDlg, IDC_EDIT_ENDTIMING);
+
+    dlg_Ctr->heBaseBPM = GetDlgItem(hDlg, IDC_EDIT_BASEBPM);
+    dlg_Ctr->heLineOffset = GetDlgItem(hDlg, IDC_EDIT_LINEOFFSET);
+
+    dlg_Ctr->heVolume = GetDlgItem(hDlg, IDC_EDIT_VOLUME);
+    dlg_Ctr->hslVolume = GetDlgItem(hDlg, IDC_SLIDER_VOLUME);
+
+    // Init Spin Controls
+    dlg_Ctr->hspStartSV = GetDlgItem(hDlg, IDC_SPIN_STARTSV);
+    dlg_Ctr->hspStartSVsm = GetDlgItem(hDlg, IDC_SPIN_STARTSV_SMALL);
+    dlg_Ctr->hspEndSV = GetDlgItem(hDlg, IDC_SPIN_ENDSV);
+    dlg_Ctr->hspEndSVsm = GetDlgItem(hDlg, IDC_SPIN_ENDSV_SMALL);
+
+    dlg_Ctr->hspStartTiming = GetDlgItem(hDlg, IDC_SPIN_STARTTIMING);
+    dlg_Ctr->hspStartTimingsm = GetDlgItem(hDlg, IDC_SPIN_STARTTIMING_SMALL);
+    dlg_Ctr->hspEndTiming = GetDlgItem(hDlg, IDC_SPIN_ENDTIMING);
+    dlg_Ctr->hspEndTimingsm = GetDlgItem(hDlg, IDC_SPIN_ENDTIMING_SMALL);
+
+    dlg_Ctr->hspVolume = GetDlgItem(hDlg, IDC_SPIN_VOLUME);
+    dlg_Ctr->hspVolumesm = GetDlgItem(hDlg, IDC_SPIN_VOLUME_SMALL);
+    dlg_Ctr->hspLineOffset = GetDlgItem(hDlg, IDC_SPIN_LINEOFFSET);
+
+
+    SetWindowLongPtr(hDlg, GWL_STYLE, 0);
+
+    SendMessage(GetDlgItem(hDlg, IDC_RADIO_SVTYPE_EXP), BM_SETCHECK, BST_CHECKED, 1);
+    SendMessage(GetDlgItem(hDlg, IDC_VOLUME_AUTO), BM_SETCHECK, BST_CHECKED, 1);
+    SendMessage(GetDlgItem(hDlg, IDC_KIAI_AUTO), BM_SETCHECK, BST_CHECKED, 1);
+
+    //sv
+    _stprintf_s(t, _T("%.lf"), startSV);
+    SetWindowText(dlg_Ctr->heStartSV, t);
+    _stprintf_s(t, _T("%.lf"), endSV);
+    SetWindowText(dlg_Ctr->heEndSV, t);
+
+    //volume
+    SetEditVolume(dlg_Ctr->heVolume, volume);
+    SendMessage(dlg_Ctr->hslVolume, TBM_SETRANGE, TRUE, MAKELPARAM(0, 100));
+    SendMessage(dlg_Ctr->hslVolume, TBM_SETPOS, TRUE, volume);
+    SendMessage(dlg_Ctr->hslVolume, TBM_SETPAGESIZE, 0, 10);
+
+    //line offset
+    _stprintf_s(t, _T("%d"), DEFAULTOFFSET);
+    SetWindowText(dlg_Ctr->heLineOffset, t);
+
+    //spin
+    SendMessage(dlg_Ctr->hspStartSV,   UDM_SETBUDDY, (WPARAM)dlg_Ctr->heStartSV, 0);
+    SendMessage(dlg_Ctr->hspStartSVsm, UDM_SETBUDDY, (WPARAM)dlg_Ctr->heStartSV, 0);
+
+    SendMessage(dlg_Ctr->hspEndSV,   UDM_SETBUDDY, (WPARAM)dlg_Ctr->heEndSV, 0);
+    SendMessage(dlg_Ctr->hspEndSVsm, UDM_SETBUDDY, (WPARAM)dlg_Ctr->heEndSV, 0);
+
+    SendMessage(dlg_Ctr->hspStartTiming,   UDM_SETBUDDY, (WPARAM)dlg_Ctr->heStartTiming, 0);
+    SendMessage(dlg_Ctr->hspStartTimingsm, UDM_SETBUDDY, (WPARAM)dlg_Ctr->heStartTiming, 0);
+
+    SendMessage(dlg_Ctr->hspEndTiming,   UDM_SETBUDDY, (WPARAM)dlg_Ctr->heEndTiming, 0);
+    SendMessage(dlg_Ctr->hspEndTimingsm, UDM_SETBUDDY, (WPARAM)dlg_Ctr->heEndTiming, 0);
+
+    SendMessage(dlg_Ctr->hspVolume,   UDM_SETBUDDY, (WPARAM)dlg_Ctr->heVolume, 0);
+    SendMessage(dlg_Ctr->hspVolumesm, UDM_SETBUDDY, (WPARAM)dlg_Ctr->heVolume, 0);
+    SendMessage(dlg_Ctr->hspLineOffset, UDM_SETBUDDY, (WPARAM)dlg_Ctr->heLineOffset, 0);
+
+    SendMessage(dlg_Ctr->hspLineOffset, UDM_SETRANGE, 0, MAKELPARAM(25, -25));
+
 }

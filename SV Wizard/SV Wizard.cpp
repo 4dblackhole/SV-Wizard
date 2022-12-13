@@ -139,8 +139,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         youmuImg.Init(IDB_YOUMUBG);
         nmImg.Init(IDB_NIGHTMAREBG);
         BG.SetBackGround(hWnd, &youmuImg);
-        BG.SetBGMinX(double(Dialog.GetDialogWidth() + 100));
-        BG.SetBGMinY(double(Dialog.GetDialogHeight() + 100));
+        BG.SetBGMinX(double(Dialog.GetDialogWidth() + DIALOGDISTANCE*2));
+        BG.SetBGMinY(double(Dialog.GetDialogHeight() + DIALOGDISTANCE*2));
         }
         break;
 
@@ -223,6 +223,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_DESTROY:
         youmuImg.Release();
+        Dialog.Release();
         PostQuitMessage(0);
         break;
     default:
@@ -251,7 +252,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return (INT_PTR)FALSE;
 }
 
-void OpenFileDirectory(TCHAR* dir, SVDialog& dialog)
+void OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
 {
     TCHAR tempStr[300];
     OPENFILENAME OFN;
@@ -270,6 +271,8 @@ void OpenFileDirectory(TCHAR* dir, SVDialog& dialog)
         if (MessageBox(hRootWindow, tempStr, L"OPEN?", MB_YESNO) == IDYES)
         {
             //TODO: send directory TCHAR to Dialog
+            HWND hst = dialog.GetStFileDir();
+            SetWindowText(hst, dir);
         }
     }
 }
