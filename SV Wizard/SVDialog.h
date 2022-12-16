@@ -3,7 +3,15 @@
 #include "resource.h"
 
 #define DIALOGDISTANCE 50
-#define DEFAULTOFFSET -5
+
+#define LINEOFFSET_DEFAULTPOS -5
+
+#define VOLUMEMAX 100
+#define VOLUMEMIN 0
+#define VOLUME_SPINUNIT 5
+#define VOLUME_SLIDERUNIT 10
+
+#define TIMING_SPINUNIT 10
 
 class SVDialog
 {
@@ -62,6 +70,7 @@ public:
 
 	inline int GetKiaiType() { return kiaiType; }
 	inline int GetSVType() { return svType; }
+	inline int GetStartTiming() { return startTiming; }
 	inline int GetVolume() { return volume; }
 
 	inline HWND GetStFileDir() { return dlg_Ctr->hstFileDir; }//Get Static control handle which contains File Directory 
@@ -77,14 +86,20 @@ private:
 	RECT dlgWrt, dlgCrt;//Window Rect, Client Rect
 	SORTTYPE sortType;
 	double startSV, endSV;
+	double baseBPM;
 	int kiaiType, svType, volume;
-	int startPos, endPos;
-	BOOL volumeAuto;
+	int startTiming, endTiming, lineOffset;
+	BOOL volumeAuto, baseBPMenable;
+	TCHAR mapDirectory[MAX_PATH]{};
 
 	INT_PTR CALLBACK SVWProc(HWND, UINT, WPARAM, LPARAM);
 	static INT_PTR CALLBACK SVWProcWrapper(HWND, UINT, WPARAM, LPARAM);
 
+	void AdjustIntRange(_Inout_ int&, _In_ int, _In_ int);
+	void SetEditInt(HWND, int);
 	void SetEditVolume(HWND, int);
+
+	void Generate_ValueSetting();
 
 	void InitDialogControlHandles(LPControls&, HWND); //Init HWND values
 };

@@ -134,6 +134,7 @@
     <ClInclude Include="ResourceManager\Image.h" />
     <ClInclude Include="ResourceManager\ImageManager.h" />
     <ClInclude Include="ResourceManager\SingletonBase.h" />
+    <ClInclude Include="Singletones.h" />
     <ClInclude Include="SV Wizard.h" />
     <ClInclude Include="SVDialog.h" />
     <ClInclude Include="targetver.h" />

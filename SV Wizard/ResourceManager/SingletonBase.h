@@ -1,5 +1,4 @@
 #pragma once
-#include "../framework.h"
 
 template <typename T>
 class SingletonBase

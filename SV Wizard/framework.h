@@ -27,11 +27,6 @@
 #include <iostream>
 using namespace std;
 
-#include "ResourceManager/Image.h"
-#include "Utilities/MyShortCuts.h"
-
-#define SHORTCUT ShortCut::GetInstance()
-
 #ifdef _UNICODE
 #define tstring wstring
 #else

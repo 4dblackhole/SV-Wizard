@@ -100,7 +100,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+   HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
    
       if (!hWnd)
@@ -121,7 +121,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static PAINTSTRUCT ps;
     static HDC hdc, hMemDC;
 
-    static Image youmuImg, nmImg;
+    static Image *youmuImg, *nmImg;
     static BackGround BG;
     static SVDialog Dialog;
 
@@ -136,9 +136,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
         Dialog.Init(IDD_SVWIZARD, hWnd);
 
-        youmuImg.Init(IDB_YOUMUBG);
-        nmImg.Init(IDB_NIGHTMAREBG);
-        BG.SetBackGround(hWnd, &youmuImg);
+        IMAGES.AddImage(_T("youmuImg"), IDB_YOUMUBG);
+
+        //youmuImg.Init(IDB_YOUMUBG);
+        //nmImg.Init(IDB_NIGHTMAREBG);
+        BG.SetBackGround(hWnd, IMAGES.FindImage(_T("youmuImg")));
         BG.SetBGMinX(double(Dialog.GetDialogWidth() + DIALOGDISTANCE*2));
         BG.SetBGMinY(double(Dialog.GetDialogHeight() + DIALOGDISTANCE*2));
         }
@@ -208,8 +210,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // PAINT START ======================================================
 
             BG.Render(hMemDC);
-            wsprintf(sss, _T("Client Area : %d x %d\nMouse PT : %d %d\nKiai %d, SV %d, Volume %d"),
-                crt.right, crt.bottom, moustPt.x, moustPt.y, Dialog.GetKiaiType(), Dialog.GetSVType(), Dialog.GetVolume());
+            wsprintf(sss, _T("Client Area : %d x %d\nMouse PT : %d %d\nKiai %d, SV %d, StartTiming %d\nVolume %d"),
+                crt.right, crt.bottom, moustPt.x, moustPt.y,
+                Dialog.GetKiaiType(), Dialog.GetSVType(), Dialog.GetStartTiming(), Dialog.GetVolume());
             DrawText(hMemDC, sss, lstrlen(sss), &crt, DT_LEFT);
 
             BitBlt(hdc, 0, 0, width, height, hMemDC, 0, 0, SRCCOPY);
@@ -222,7 +225,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_DESTROY:
-        youmuImg.Release();
+        IMAGES.Release();
         Dialog.Release();
         PostQuitMessage(0);
         break;
@@ -270,9 +273,7 @@ void OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
         wsprintf(tempStr, L"☆ %s ☆ has selected, Want to open?", OFN.lpstrFile);
         if (MessageBox(hRootWindow, tempStr, L"OPEN?", MB_YESNO) == IDYES)
         {
-            //TODO: send directory TCHAR to Dialog
-            HWND hst = dialog.GetStFileDir();
-            SetWindowText(hst, dir);
+            SetWindowText(dialog.GetStFileDir(), dir);
         }
     }
 }
