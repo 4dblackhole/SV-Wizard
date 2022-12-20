@@ -2,7 +2,13 @@
 //
 
 #include "framework.h"
+#include "Utilities/BinaryFile.h"
+#include "SVDialog.h"
 #include "SV Wizard.h"
+#include "Utilities/Path.h"
+#include "Utilities/String.h"
+#include "Objects/Note.h"
+#include "Objects/MusicalLine.h"
 
 #define MAX_LOADSTRING 100
 
@@ -79,7 +85,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_YOUMUICON1));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_SVWIZARD);
+    wcex.lpszMenuName   = MAKEINTRESOURCE(IDC_SVWIZARD);
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = NULL; //LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -121,7 +127,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static PAINTSTRUCT ps;
     static HDC hdc, hMemDC;
 
-    static Image *youmuImg, *nmImg;
     static BackGround BG;
     static SVDialog Dialog;
 
@@ -130,72 +135,87 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     static TCHAR fileDirectory[MAX_PATH] = _T("");
 
+    static char* osuTXT; //most of osu files use UTF-8
+
+    static queue<MusicalLine> lines;
+
     switch (message)
     {
-    case WM_CREATE:
+        case WM_CREATE:
         {
-        Dialog.Init(IDD_SVWIZARD, hWnd);
+            Dialog.Init(IDD_SVWIZARD, hWnd);
+            //Dialog.SetSortType(SVDialog::SORT_TOPLEFT);
 
-        IMAGES.AddImage(_T("youmuImg"), IDB_YOUMUBG);
+            IMAGES.AddImage(_T("youmuImg"), IDB_YOUMUBG);
+            IMAGES.AddImage(_T("nmImg"), IDB_NIGHTMAREBG);
 
-        //youmuImg.Init(IDB_YOUMUBG);
-        //nmImg.Init(IDB_NIGHTMAREBG);
-        BG.SetBackGround(hWnd, IMAGES.FindImage(_T("youmuImg")));
-        BG.SetBGMinX(double(Dialog.GetDialogWidth() + DIALOGDISTANCE*2));
-        BG.SetBGMinY(double(Dialog.GetDialogHeight() + DIALOGDISTANCE*2));
+            BG.SetBackGround(hWnd, IMAGES.FindImage(_T("youmuImg")));
+            BG.SetBGMinX(double(Dialog.GetDialogWidth() + DIALOGDISTANCE * 2));
+            BG.SetBGMinY(double(Dialog.GetDialogHeight() + DIALOGDISTANCE * 2));
+
         }
         break;
 
-    case WM_SIZING:
+        case WM_SIZING:
         {
-        BG.Resizing(wParam, lParam);
+            BG.Resizing(wParam, lParam);
         }
         break;
 
-    case WM_SIZE:
+        case WM_SIZE:
         {
-        BG.Resize(wParam, lParam);
-        Dialog.Move();
+            BG.Resize(wParam, lParam);
+            Dialog.Move();
         }
         break;
 
-    case WM_MOVE:
+        case WM_MOVE:
         {
-        Dialog.Move();
+            Dialog.Move();
         }
         break;
 
-    case WM_MOUSEMOVE:
+        case WM_MOUSEMOVE:
         {
-        moustPt.x = LOWORD(lParam);
-        moustPt.y = HIWORD(lParam);
-        InvalidateRect(hWnd, NULL, FALSE);
+            moustPt.x = LOWORD(lParam);
+            moustPt.y = HIWORD(lParam);
+            InvalidateRect(hWnd, NULL, FALSE);
         }
         break;
 
-    case WM_COMMAND:
+        case WM_COMMAND:
         {
             // 메뉴 선택을 구문 분석합니다:
             switch (LOWORD(wParam))
             {
-            case IDM_LOAD:
+                case IDM_OPEN:
                 {
-                OpenFileDirectory(fileDirectory, Dialog);
+                    if (OpenFileDirectory(fileDirectory, Dialog) == TRUE)
+                    {
+                        SAFE_DELETE_ARR(osuTXT)
+                        osuTXT = GetOsuFileTXT(fileDirectory);
+                        string txt = osuTXT;
+                        size_t startPoint = txt.find(timingPointIdc) + timingPointIdc.size();
+                        DEBUG;
+                    }
                 }
                 break; 
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+
+                case IDM_ABOUT:
+                    DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
                 break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
+
+                case IDM_EXIT:
+                    DestroyWindow(hWnd);
                 break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
+
+                default:
+                    return DefWindowProc(hWnd, message, wParam, lParam);
             }
         }
         break;
 
-    case WM_PAINT:
+        case WM_PAINT:
         {
             RECT crt;
             HBITMAP backBit, oldBackBit;
@@ -210,13 +230,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // PAINT START ======================================================
 
             BG.Render(hMemDC);
-            wsprintf(sss, _T("Client Area : %d x %d\nMouse PT : %d %d\nKiai %d, SV %d, StartTiming %d\nVolume %d"),
+            _stprintf_s(sss, _T("Client Area : %d x %d\nMouse PT : %d %d\nKiai %d, SV %d, StartTiming %d\nVolume %d\nStart SV %g End SV %g"),
                 crt.right, crt.bottom, moustPt.x, moustPt.y,
-                Dialog.GetKiaiType(), Dialog.GetSVType(), Dialog.GetStartTiming(), Dialog.GetVolume());
+                Dialog.GetKiaiType(), Dialog.GetSVType(), Dialog.GetStartTiming(), Dialog.GetVolume(), Dialog.GetStartSV(),Dialog.GetEndSV());
             DrawText(hMemDC, sss, lstrlen(sss), &crt, DT_LEFT);
 
-            BitBlt(hdc, 0, 0, width, height, hMemDC, 0, 0, SRCCOPY);
             
+            
+            // DOUBLE BUFFERING =================================================
+            BitBlt(hdc, 0, 0, width, height, hMemDC, 0, 0, SRCCOPY);
             // PAINT END ========================================================
             SelectObject(hMemDC, oldBackBit);
             DeleteObject(backBit);
@@ -224,13 +246,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             EndPaint(hWnd, &ps);
         }
         break;
-    case WM_DESTROY:
-        IMAGES.Release();
-        Dialog.Release();
-        PostQuitMessage(0);
+
+        case WM_DESTROY:
+            IMAGES.Release();
+            Dialog.Release();
+            SAFE_DELETE_ARR(osuTXT)
+            PostQuitMessage(0);
         break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
+
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
 }
@@ -255,7 +280,7 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return (INT_PTR)FALSE;
 }
 
-void OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
+BOOL OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
 {
     TCHAR tempStr[300];
     OPENFILENAME OFN;
@@ -266,14 +291,88 @@ void OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
     OFN.lpstrFilter = osuFilter;
     OFN.lpstrFile = dir;
     OFN.nMaxFile = MAX_PATH;
-    OFN.lpstrInitialDir = L".";
+    OFN.lpstrInitialDir = _T(".");
 
     if (GetOpenFileName(&OFN) != 0)
     {
-        wsprintf(tempStr, L"☆ %s ☆ has selected, Want to open?", OFN.lpstrFile);
-        if (MessageBox(hRootWindow, tempStr, L"OPEN?", MB_YESNO) == IDYES)
+        wsprintf(tempStr, _T("☆ %s ☆ has selected, Want to open?"), OFN.lpstrFile);
+        if (MessageBox(hRootWindow, tempStr, _T("OPEN?"), MB_YESNO) == IDYES)
         {
-            SetWindowText(dialog.GetStFileDir(), dir);
+            if (CheckUTF8(dir)==FALSE)
+            {
+                MessageBox(hRootWindow, _T("File must be UTF-8"), _T("alert"), MB_OK);
+                return FALSE;
+            }
+
+            SetWindowText(dialog.GetStFileDir(), Path::GetFileName(dir).c_str());
+            return TRUE;
         }
     }
+    return FALSE;
+}
+
+BOOL CheckUTF8(_In_ TCHAR* dir)
+{
+    BOOL result = TRUE;
+
+    HANDLE hFile = CreateFile(dir, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    bool isChecked = hFile != INVALID_HANDLE_VALUE;
+    assert(isChecked); //load check
+
+    WORD unicode{};
+    assert(ReadFile(hFile, &unicode, sizeof(WORD), NULL, NULL));
+
+    if (unicode == 0xfeff || unicode == 0xffef) // UTF 16 => FALSE
+    {
+        result = FALSE;
+    }
+
+    CloseHandle(hFile);
+
+    return result;
+}
+
+char* GetOsuFileTXT(_In_ TCHAR* dir)
+{
+    assert(lstrlen(dir) > 0); //length check
+
+    HANDLE hFile = CreateFile(dir, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    bool isChecked = hFile != INVALID_HANDLE_VALUE;
+    assert(isChecked); //load check
+    
+    DWORD fileSize = GetFileSize(hFile, NULL);
+    DWORD dwRead;
+
+    char* resultTXT = new char[fileSize + 1];
+    assert(ReadFile(hFile, resultTXT, fileSize, &dwRead, NULL));
+    resultTXT[fileSize] = 0;
+
+    if (hFile != NULL)
+    {
+        CloseHandle(hFile);
+        hFile = NULL;
+    }
+
+#define FILECHECK___1
+#ifdef FILECHECK___
+
+    DWORD size = 0;
+    hFile = CreateFile(_T("bakup test.osu"), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    isChecked = hFile != INVALID_HANDLE_VALUE;
+    assert(isChecked);
+
+    WriteFile(hFile, resultTXT, strlen(resultTXT), &size, NULL);
+
+    int asdf = 1;
+
+    if (hFile != NULL)
+    {
+        CloseHandle(hFile);
+        hFile = NULL;
+    }
+#else
+
+#endif
+
+    return resultTXT;
 }

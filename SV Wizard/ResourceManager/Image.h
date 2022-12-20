@@ -23,7 +23,7 @@ class Image
 		DWORD resourceID;
 		HDC hMemDC;
 		HBITMAP hBit, hOldbit;
-		int targetX, targetY, bitmapWidth, bitmapHeight; // Not Original Width/Height
+		int targetX, targetY, origWidth, origHeight, bitmapWidth, bitmapHeight; // Not Original Width/Height
 
 		int currentFrameX, currentFrameY; // No.X Frame and No.Y Frame (zero base)
 		int maxFrameX, maxFrameY; // Maximum Frame Count (zero base)
@@ -94,6 +94,9 @@ public:
 
 	inline BOOL GetVisible() { return visible; }
 	inline void SetVisible(const BOOL& b) { visible = b; }
+
+	inline int GetOrigWidth() { return imageInfo->origWidth; }
+	inline int GetOrigHeight() { return imageInfo->origHeight; }
 
 	inline int GetWidth() { return imageInfo->bitmapWidth; }
 	inline int GetHeight() { return imageInfo->bitmapHeight; }

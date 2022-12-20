@@ -39,3 +39,8 @@ using namespace std;
 extern HWND hRootWindow; //Handle of Main Window
 extern HINSTANCE hInst;
 extern TCHAR osuFilter[];
+
+static string timingPointIdc = "[TimingPoints]\r\n";
+static string hitObjectIdc = "[HitObjects]\r\n";
+
+#define DEBUG int aijewfwefsadf = 1

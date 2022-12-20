@@ -15,6 +15,7 @@
 
 class SVDialog
 {
+public:
 	enum SORTTYPE
 	{
 		SORT_TOPLEFT,
@@ -50,7 +51,6 @@ class SVDialog
 
 	}Controls, * LPControls;
 
-public:
 	SVDialog();
 	~SVDialog();
 
@@ -72,6 +72,8 @@ public:
 	inline int GetSVType() { return svType; }
 	inline int GetStartTiming() { return startTiming; }
 	inline int GetVolume() { return volume; }
+	inline double GetStartSV() { return startSV; }
+	inline double GetEndSV() { return endSV; }
 
 	inline HWND GetStFileDir() { return dlg_Ctr->hstFileDir; }//Get Static control handle which contains File Directory 
 
@@ -102,5 +104,6 @@ private:
 	void Generate_ValueSetting();
 
 	void InitDialogControlHandles(LPControls&, HWND); //Init HWND values
+	void SetSVEditBySpin(HWND, LPARAM, double&, double);
 };
 

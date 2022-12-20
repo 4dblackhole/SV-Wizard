@@ -115,6 +115,34 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 
         case WM_NOTIFY:
         {
+            switch (LOWORD(wParam))
+            {
+                case IDC_SPIN_STARTSV:
+                {
+                    SetSVEditBySpin(dlg_Ctr->heStartSV, lParam,startSV, 0.1);
+                }
+                break;
+
+                case IDC_SPIN_STARTSV_SMALL:
+                {
+                    SetSVEditBySpin(dlg_Ctr->heStartSV, lParam, startSV, 0.01);
+                }
+                break;
+
+                case IDC_SPIN_ENDSV:
+                {
+                    SetSVEditBySpin(dlg_Ctr->heEndSV, lParam,endSV, 0.1);
+                }
+                break;
+
+                case IDC_SPIN_ENDSV_SMALL:
+                {
+                    SetSVEditBySpin(dlg_Ctr->heEndSV, lParam, endSV, 0.01);
+                }
+                break;
+
+                default: break;
+            }
             LPNMHDR ncode = (LPNMHDR)lParam;
             switch (ncode->code)
             {
@@ -432,9 +460,9 @@ void SVDialog::InitDialogControlHandles(LPControls& dlg_Ctr, HWND hDlg)
     SendMessage(GetDlgItem(hDlg, IDC_KIAI_AUTO), BM_SETCHECK, BST_CHECKED, 1);
 
     //sv
-    _stprintf_s(t, _T("%.lf"), startSV);
+    _stprintf_s(t, _T("%g"), startSV);
     SetWindowText(dlg_Ctr->heStartSV, t);
-    _stprintf_s(t, _T("%.lf"), endSV);
+    _stprintf_s(t, _T("%g"), endSV);
     SetWindowText(dlg_Ctr->heEndSV, t);
 
     _stprintf_s(t, _T("%d"), startTiming);
@@ -476,4 +504,18 @@ void SVDialog::InitDialogControlHandles(LPControls& dlg_Ctr, HWND hDlg)
     SendMessage(dlg_Ctr->hspVolumesm, UDM_SETRANGE, 0, MAKELPARAM(VOLUMEMAX, VOLUMEMIN));
     SendMessage(dlg_Ctr->hspLineOffset, UDM_SETRANGE, 0, MAKELPARAM(25, -25));
 
+}
+
+void SVDialog::SetSVEditBySpin(HWND editCtr, LPARAM lParam, double& target, double delta)
+{
+    LPNMUPDOWN nmud = (LPNMUPDOWN)lParam;
+    TCHAR tt[16] = { 0 };
+    double tempsv;
+    GetWindowText(editCtr, tt, 16);
+    tempsv = _ttof(tt);
+    if (tempsv == 0.0)return;
+    tempsv += delta * (-(nmud->iDelta));
+    target = tempsv;
+    _stprintf_s(tt, _T("%g"), tempsv);
+    SetWindowText(editCtr, tt);
 }

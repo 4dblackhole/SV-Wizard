@@ -23,6 +23,8 @@ HRESULT Image::Init(int w, int h)
 	imageInfo->hMemDC = CreateCompatibleDC(hdc);  //empty DC
 	imageInfo->hBit = (HBITMAP)CreateCompatibleBitmap(hdc, w, h);
 	imageInfo->hOldbit = (HBITMAP)SelectObject(imageInfo->hMemDC, imageInfo->hBit);
+	imageInfo->origWidth = w;
+	imageInfo->origHeight = h;
 	imageInfo->bitmapWidth = w;
 	imageInfo->bitmapHeight = h;
 	imageInfo->drawArea = { 0,0,w,h };
@@ -64,6 +66,7 @@ HRESULT Image::Init(DWORD resourceID, int x, int y, int w, int h, int frameAmoun
 
 	HDC hdc = GetDC(hRootWindow);
 
+	SetStretchBltMode(hdc, HALFTONE);
 	imageInfo = new IMAGE_INFO;
 	imageInfo->loadType = LOAD_FROM_RESOURCE;
 	imageInfo->resourceID = resourceID;
@@ -78,11 +81,13 @@ HRESULT Image::Init(DWORD resourceID, int x, int y, int w, int h, int frameAmoun
 	else
 	{
 		imageInfo->hBit = (HBITMAP)LoadImage(hInst, MAKEINTRESOURCE(resourceID), IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE | LR_DEFAULTCOLOR);
-		BITMAP tagBitmap;
-		GetObject(imageInfo->hBit, sizeof(BITMAP), &tagBitmap);
-		w = tagBitmap.bmWidth;
-		h = tagBitmap.bmHeight;
 	}
+	BITMAP tagBitmap;
+	GetObject(imageInfo->hBit, sizeof(BITMAP), &tagBitmap);
+	imageInfo->origWidth = tagBitmap.bmWidth;
+	imageInfo->origHeight = tagBitmap.bmHeight;
+
+
 	imageInfo->hOldbit = (HBITMAP)SelectObject(imageInfo->hMemDC, imageInfo->hBit);
 
 	if ((style & IMAGE_CHANGE_FRAME) == 0)frameAmountX = 1, frameAmountY = 1;
@@ -91,8 +96,8 @@ HRESULT Image::Init(DWORD resourceID, int x, int y, int w, int h, int frameAmoun
 
 	imageInfo->targetX = x;
 	imageInfo->targetY = y;
-	imageInfo->bitmapWidth = w;
-	imageInfo->bitmapHeight = h;
+	imageInfo->bitmapWidth = (w == 0) ? imageInfo->origWidth : w;
+	imageInfo->bitmapHeight = (h == 0) ? imageInfo->origHeight : h;
 	imageInfo->frameW = w / frameAmountX;
 	imageInfo->frameH = h / frameAmountY;
 	imageInfo->currentFrameX = 0;
@@ -126,10 +131,12 @@ void Image::Resize(int w, int h)
 
 	imageInfo->hOldbit = (HBITMAP)SelectObject(imageInfo->hMemDC, imageInfo->hBit);
 
-	imageInfo->bitmapWidth = w;
-	imageInfo->bitmapHeight = h;
+	imageInfo->bitmapWidth = (w == 0) ? imageInfo->origWidth : w;
 	imageInfo->frameW = w / (imageInfo->maxFrameX + 1);
+
+	imageInfo->bitmapHeight = (h == 0) ? imageInfo->origHeight : h;
 	imageInfo->frameH = h / (imageInfo->maxFrameY + 1);
+
 }
 
 void Image::Release()
@@ -150,12 +157,12 @@ void Image::Release()
 
 void Image::Render(HDC hdc)
 {
-	Render(hdc, imageInfo->targetX, imageInfo->targetY, 0, 0, imageInfo->bitmapWidth, imageInfo->bitmapHeight);
+	Render(hdc, imageInfo->targetX, imageInfo->targetY, 0, 0, imageInfo->origWidth, imageInfo->origHeight);
 }
 
 void Image::Render(HDC hdc, int dx, int dy)
 {
-	Render(hdc, dx, dy, 0, 0, imageInfo->bitmapWidth, imageInfo->bitmapHeight);
+	Render(hdc, dx, dy, 0, 0, imageInfo->origWidth, imageInfo->origHeight);
 }
 
 void Image::Render(HDC hdc, int dx, int dy, int sx, int sy, int sw, int sh)
@@ -176,12 +183,14 @@ void Image::Render(HDC hdc, int dx, int dy, int sx, int sy, int sw, int sh)
 	}
 	else
 	{
+
 		BitBlt(hdc, dx, dy,
 			sw,
 			sh,
 			imageInfo->hMemDC,
 			sx, sy,
 			SRCCOPY);
+
 	}
 }
 

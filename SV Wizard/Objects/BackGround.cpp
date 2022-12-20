@@ -14,9 +14,19 @@ void BackGround::SetBackGround(HWND hWnd, Image* img)
     targetWnd = hWnd;
     if (image == NULL)return;
 
-    origWidth = img->GetWidth();
-    origHeight = img->GetHeight();
-    SHORTCUT.SetClientRect(hWnd, origWidth, origHeight);
+    origWidth = img->GetOrigWidth();
+    origHeight = img->GetOrigHeight();
+
+    int width{}, height{};
+    double rate = 1.0;
+
+    if (BGMaxXPixel < origWidth) rate = min(rate, ((double)BGMaxXPixel / (double)origWidth));
+    if (BGMaxYPixel < origHeight) rate = min(rate, ((double)BGMaxYPixel / (double)origHeight));
+
+    width = int((double)origWidth * rate);
+    height = int((double)origHeight * rate);
+
+    SHORTCUT.SetClientRect(hWnd, width, height); //calls WM_SIZE
 }
 
 void BackGround::Resize(WPARAM wParam,LPARAM lParam)

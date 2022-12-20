@@ -130,6 +130,9 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="Objects\BackGround.h" />
+    <ClInclude Include="Objects\MusicalLine.h" />
+    <ClInclude Include="Objects\MusicalObject.h" />
+    <ClInclude Include="Objects\Note.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceManager\Image.h" />
     <ClInclude Include="ResourceManager\ImageManager.h" />
@@ -138,15 +141,24 @@
     <ClInclude Include="SV Wizard.h" />
     <ClInclude Include="SVDialog.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Utilities\BinaryFile.h" />
     <ClInclude Include="Utilities\MyShortCuts.h" />
+    <ClInclude Include="Utilities\Path.h" />
+    <ClInclude Include="Utilities\String.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Objects\BackGround.cpp" />
+    <ClCompile Include="Objects\MusicalLine.cpp" />
+    <ClCompile Include="Objects\MusicalObject.cpp" />
+    <ClCompile Include="Objects\Note.cpp" />
     <ClCompile Include="ResourceManager\Image.cpp" />
     <ClCompile Include="ResourceManager\ImageManager.cpp" />
     <ClCompile Include="SV Wizard.cpp" />
     <ClCompile Include="SVDialog.cpp" />
+    <ClCompile Include="Utilities\BinaryFile.cpp" />
     <ClCompile Include="Utilities\MyShortCuts.cpp" />
+    <ClCompile Include="Utilities\Path.cpp" />
+    <ClCompile Include="Utilities\String.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SV Wizard.rc" />
