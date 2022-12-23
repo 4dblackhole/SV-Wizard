@@ -7,14 +7,17 @@ public:
 	MusicalObject(const MusicalObject&);
 	virtual ~MusicalObject();
 
-	inline int GetTiming() { return timing; }
+	inline double GetTiming() { return timing; }
+	inline double GetEndTiming() { return endTiming; }
 	inline BOOL GetVisible() { return visible; }
 
-	inline void SetTiming(int i) { timing = i; }
+	inline void SetTiming(double i) { timing = i; }
+	inline void SetEndTiming(double i) { endTiming = i; }
 	inline void SetVisible(BOOL b) { visible = b; }
 
 protected:
-	int timing;
+	double timing; //decimal point error fuck
+	double endTiming; //
 	BOOL visible;
 };
 

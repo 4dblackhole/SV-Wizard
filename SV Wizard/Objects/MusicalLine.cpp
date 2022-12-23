@@ -5,8 +5,9 @@ MusicalLine::MusicalLine()
 {
 }
 
-MusicalLine::MusicalLine(const MusicalLine& l)
+MusicalLine::MusicalLine(const MusicalLine& l) :MusicalObject(l)
 {
+	info = l.info;
 }
 
 MusicalLine::~MusicalLine()

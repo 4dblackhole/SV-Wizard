@@ -2,13 +2,10 @@
 //
 
 #include "framework.h"
-#include "Utilities/BinaryFile.h"
 #include "SVDialog.h"
-#include "SV Wizard.h"
-#include "Utilities/Path.h"
-#include "Utilities/String.h"
-#include "Objects/Note.h"
 #include "Objects/MusicalLine.h"
+#include "Objects/Note.h"
+#include "SV Wizard.h"
 
 #define MAX_LOADSTRING 100
 
@@ -132,12 +129,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     static POINT moustPt = { 0,0 };
     static TCHAR sss[512];
+    static TCHAR ssss[512]=_T("");
 
     static TCHAR fileDirectory[MAX_PATH] = _T("");
 
     static char* osuTXT; //most of osu files use UTF-8
 
-    static queue<MusicalLine> lines;
+    static queue<MusicalLine> qLines;
+    static queue<Note> qNotes;
 
     switch (message)
     {
@@ -194,9 +193,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     {
                         SAFE_DELETE_ARR(osuTXT)
                         osuTXT = GetOsuFileTXT(fileDirectory);
-                        string txt = osuTXT;
-                        size_t startPoint = txt.find(timingPointIdc) + timingPointIdc.size();
-                        DEBUG;
+                        InitMusicalObjects(osuTXT, qLines, qNotes);
                     }
                 }
                 break; 
@@ -235,6 +232,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 Dialog.GetKiaiType(), Dialog.GetSVType(), Dialog.GetStartTiming(), Dialog.GetVolume(), Dialog.GetStartSV(),Dialog.GetEndSV());
             DrawText(hMemDC, sss, lstrlen(sss), &crt, DT_LEFT);
 
+            TextOut(hMemDC, 10, 500, ssss, lstrlen(ssss));
             
             
             // DOUBLE BUFFERING =================================================
@@ -280,6 +278,165 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return (INT_PTR)FALSE;
 }
 
+void SetMusicalLine(_In_ const string& txt, queue<MusicalLine>& lines)
+{
+    lines = queue<MusicalLine>();
+    vector<string> vLines;
+    String::SplitString(&vLines, txt, "\r\n");
+
+    vector<string> vLineFactor;
+    vLineFactor.reserve(8); // Timing Point, BPM, measure, Hitsound Type, Custom No, Volume, Line Type, Kiai
+
+    double currentBPM = 0.0;
+
+    for (int i = 0; i < vLines.size(); i++)
+    {
+        String::SplitString(&vLineFactor, vLines[i], ",");
+        MusicalLine tempML;
+        MusicalLine_tag tempMLtag;
+
+        // Timing Point
+        tempML.SetTiming(atof(vLineFactor[0].c_str()));
+
+        // BPM or SV
+        double tempBPM = atof(vLineFactor[1].c_str());
+        if (tempBPM > 0) // Red Line
+        {
+            tempMLtag.lineType = Line_RED;
+            tempMLtag.bpm = 60000.0 / tempBPM;
+        }
+        else if (tempBPM < 0) // Green Line
+        {
+            tempMLtag.lineType = Line_GREEN;
+            tempMLtag.sv = 100.0 / -tempBPM;
+        }
+        else // can't divide by 0
+        {
+            vLineFactor.clear();
+            MessageBox(hRootWindow, _T("BPM or SV Value Error"), _T("alert"), MB_OK);
+            return;
+        }
+
+        // Measure
+        tempMLtag.measure = atoi(vLineFactor[2].c_str());
+
+        // HitSound
+        tempMLtag.hsType.sampleSet = (HitSound_SampleSet)atoi(vLineFactor[3].c_str());
+        tempMLtag.hsType.idx = atoi(vLineFactor[4].c_str());
+
+        // Volume
+        tempMLtag.volume = atoi(vLineFactor[5].c_str());
+
+        // Kiai
+        tempMLtag.kiai = (BOOL)atoi(vLineFactor[7].c_str());
+
+        // Register Information
+        tempML.SetInfo(tempMLtag);
+
+        lines.push(tempML);
+        vLineFactor.clear();
+    }
+}
+
+
+void SetNoteType(Note& note, int flag, _Out_ BOOL& LNflag)
+{
+    /* each bit
+    0: Hit circle
+    1: Slider
+    3: Spinner
+    7: osu!mania hold
+    The remaining bits are used for distinguishing new combos and optionally skipping combo colours (commonly called "colour hax"):
+    2: New combo
+    4–6: A 3-bit integer specifying how many combo colours to skip, if this object starts a new combo.
+    */
+    LNflag = FALSE;
+
+    if (flag == 0 || flag == 1)note.SetNoteType(Note::TYPE_CIRCLE);
+    else if ((flag & (1 << 1)) != 0)note.SetNoteType(Note::TYPE_SLIDER), LNflag = TRUE;
+    else if ((flag & (1 << 3)) != 0)note.SetNoteType(Note::TYPE_SPINNER), LNflag = TRUE;
+    else if ((flag & (1 << 7)) != 0)note.SetNoteType(Note::TYPE_OSUMANIA_HOLD), LNflag = TRUE;
+}
+
+void SetNoteColor(Note& note, int flag)
+{
+    /* each bit
+    0: Normal
+    1: Whistle
+    2: Finish
+    3: Clap
+    If no bits are set, the normal hitsound is used by default.
+    */
+
+    if ((flag & (1 << 1)) != 0 || (flag & (1 << 3)) != 0)// kat check
+    {
+        if ((flag & (1 << 2)) != 0)   note.SetNoteColor(Note::COLOR_BIGKAT);
+        else                        note.SetNoteColor(Note::COLOR_KAT);
+    }
+    else
+    {
+        if ((flag & (1 << 2)) != 0)   note.SetNoteColor(Note::COLOR_BIGDON);
+        else                        note.SetNoteColor(Note::COLOR_DON);
+    }
+}
+
+void SetNote(_In_ const string& txt, queue<Note>& notes)
+{
+    notes = queue<Note>();
+    vector<string> vNotes;
+    String::SplitString(&vNotes, txt, "\r\n");
+
+    vector<string> vNoteFactor;
+    vNoteFactor.reserve(11); // see https://osu.ppy.sh/wiki/en/Client/File_formats/Osu_%28file_format%29
+
+    for (int i = 0; i < vNotes.size(); i++)
+    {
+        BOOL lncheck = FALSE;
+        String::SplitString(&vNoteFactor, vNotes[i], ",");
+        Note tempNote;
+
+        // Timing
+        tempNote.SetTiming(atof(vNoteFactor[2].c_str()));
+
+        // Note Type
+        SetNoteType(tempNote, atoi(vNoteFactor[3].c_str()), lncheck);
+
+        SetNoteColor(tempNote, atoi(vNoteFactor[4].c_str()));
+
+        if (lncheck == TRUE)
+        {
+            tempNote.SetEndTiming(atof(vNoteFactor[5].c_str()));
+
+        }
+        notes.push(tempNote);
+        vNoteFactor.clear();
+    }
+    DEBUG;
+}
+
+void InitMusicalObjects(_In_ char* osufile, queue<MusicalLine>& lines, queue<Note>& notes)
+{
+    string txt = osufile;
+
+    // Init Lines =============================================================
+    size_t startPoint = txt.find(timingPointIdc);
+    size_t endPoint = txt.find(hitObjectIdc);
+
+    if (startPoint == string::npos|| endPoint==string::npos)
+    {
+        MessageBox(hRootWindow, _T("No Indicator Detected"), _T("alert"), MB_OK);
+        return;
+    }
+
+    startPoint += timingPointIdc.size(); //index of next char of indicator
+    string objectTXT = txt.substr(startPoint, endPoint - startPoint); //Lines Area
+    SetMusicalLine(objectTXT, lines);
+
+    endPoint += hitObjectIdc.size();
+    objectTXT = txt.substr(endPoint);
+    SetNote(objectTXT, notes);
+}
+
 BOOL OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
 {
     TCHAR tempStr[300];
@@ -298,13 +455,23 @@ BOOL OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
         wsprintf(tempStr, _T("☆ %s ☆ has selected, Want to open?"), OFN.lpstrFile);
         if (MessageBox(hRootWindow, tempStr, _T("OPEN?"), MB_YESNO) == IDYES)
         {
-            if (CheckUTF8(dir)==FALSE)
+            if (CheckUTF8(dir) == FALSE)
             {
                 MessageBox(hRootWindow, _T("File must be UTF-8"), _T("alert"), MB_OK);
                 return FALSE;
             }
-
-            SetWindowText(dialog.GetStFileDir(), Path::GetFileName(dir).c_str());
+            else
+            {
+                tstring cpy = Path::GetFileName(dir);
+                SetWindowText(dialog.GetStFileDir(), cpy.c_str());
+                
+#define FILEBACKUP___1
+#ifdef FILEBACKUP___
+                //create back up file
+                CopyFile(dir, (cpy + tstring(_T("_backup"))).c_str(), FALSE);
+#else
+#endif // FILEBACKUP___
+            }
             return TRUE;
         }
     }
@@ -352,27 +519,6 @@ char* GetOsuFileTXT(_In_ TCHAR* dir)
         CloseHandle(hFile);
         hFile = NULL;
     }
-
-#define FILECHECK___1
-#ifdef FILECHECK___
-
-    DWORD size = 0;
-    hFile = CreateFile(_T("bakup test.osu"), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    isChecked = hFile != INVALID_HANDLE_VALUE;
-    assert(isChecked);
-
-    WriteFile(hFile, resultTXT, strlen(resultTXT), &size, NULL);
-
-    int asdf = 1;
-
-    if (hFile != NULL)
-    {
-        CloseHandle(hFile);
-        hFile = NULL;
-    }
-#else
-
-#endif
 
     return resultTXT;
 }

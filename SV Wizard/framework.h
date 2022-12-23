@@ -36,6 +36,9 @@ using namespace std;
 #define SAFE_DELETE(p)		{ if(p) {delete (p); (p) = NULL; }}
 #define SAFE_DELETE_ARR(p)	{ if(p) {delete[] (p); (p) = NULL; }}
 
+#include "Utilities/Path.h"
+#include "Utilities/String.h"
+
 extern HWND hRootWindow; //Handle of Main Window
 extern HINSTANCE hInst;
 extern TCHAR osuFilter[];
