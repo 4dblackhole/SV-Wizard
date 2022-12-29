@@ -9,6 +9,7 @@
 // Windows 헤더 파일
 #include <windows.h>
 // C 런타임 헤더 파일입니다.
+#include <algorithm>
 #include <assert.h>
 #include <cmath>
 #include <commctrl.h>
@@ -47,3 +48,4 @@ static string timingPointIdc = "[TimingPoints]\r\n";
 static string hitObjectIdc = "[HitObjects]\r\n";
 
 #define DEBUG int aijewfwefsadf = 1
+

@@ -1,6 +1,6 @@
 #pragma once
-#include "../ResourceManager/Image.h"
 #include "../framework.h"
+#include "../ResourceManager/Image.h"
 #include "../Singletones.h"
 
 class BackGround

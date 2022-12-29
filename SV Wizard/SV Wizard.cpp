@@ -2,9 +2,12 @@
 //
 
 #include "framework.h"
-#include "SVDialog.h"
+#include "resource.h"
+#include "Singletones.h"
+#include "Objects/BackGround.h"
 #include "Objects/MusicalLine.h"
 #include "Objects/Note.h"
+#include "SVDialog.h"
 #include "SV Wizard.h"
 
 #define MAX_LOADSTRING 100
@@ -134,9 +137,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     static TCHAR fileDirectory[MAX_PATH] = _T("");
 
     static char* osuTXT; //most of osu files use UTF-8
+    static string osuTXTtop, osuTXTbottom;
 
-    static queue<MusicalLine> qLines;
-    static queue<Note> qNotes;
+    static LineContainer qLines;
+    static NoteContainer qNotes;
 
     switch (message)
     {
@@ -144,6 +148,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             Dialog.Init(IDD_SVWIZARD, hWnd);
             //Dialog.SetSortType(SVDialog::SORT_TOPLEFT);
+
+            Dialog.SetLines(&qLines);
+            Dialog.SetNotes(&qNotes);
+            Dialog.SetTXT(&osuTXTtop, &osuTXTbottom);
 
             IMAGES.AddImage(_T("youmuImg"), IDB_YOUMUBG);
             IMAGES.AddImage(_T("nmImg"), IDB_NIGHTMAREBG);
@@ -194,6 +202,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                         SAFE_DELETE_ARR(osuTXT)
                         osuTXT = GetOsuFileTXT(fileDirectory);
                         InitMusicalObjects(osuTXT, qLines, qNotes);
+                        SeparateOsuTXT(osuTXT, osuTXTtop, osuTXTbottom);
                     }
                 }
                 break; 
@@ -203,7 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
 
                 case IDM_EXIT:
-                    DestroyWindow(hWnd);
+                    if (MessageBox(hWnd, _T("Quit?"), _T("alert"), MB_YESNO) == IDYES) DestroyWindow(hWnd);
                 break;
 
                 default:
@@ -278,9 +287,18 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return (INT_PTR)FALSE;
 }
 
-void SetMusicalLine(_In_ const string& txt, queue<MusicalLine>& lines)
+void SeparateOsuTXT(_In_ const string& txt, _Out_ string& top, _Out_ string& bottom)
 {
-    lines = queue<MusicalLine>();
+    size_t timingPos = txt.find(timingPointIdc) + timingPointIdc.size();
+    size_t hitObjPos = txt.find(hitObjectIdc);
+
+    top = txt.substr(0, timingPos);
+    bottom = txt.substr(hitObjPos, txt.size());
+}
+
+void SetMusicalLine(_In_ const string& txt, LineContainer& lines)
+{
+    lines.clear();
     vector<string> vLines;
     String::SplitString(&vLines, txt, "\r\n");
 
@@ -333,7 +351,7 @@ void SetMusicalLine(_In_ const string& txt, queue<MusicalLine>& lines)
         // Register Information
         tempML.SetInfo(tempMLtag);
 
-        lines.push(tempML);
+        lines.insert(make_pair(tempML.GetTiming(), tempML));
         vLineFactor.clear();
     }
 }
@@ -380,9 +398,9 @@ void SetNoteColor(Note& note, int flag)
     }
 }
 
-void SetNote(_In_ const string& txt, queue<Note>& notes)
+void SetNote(_In_ const string& txt, NoteContainer& notes)
 {
-    notes = queue<Note>();
+    notes.clear();
     vector<string> vNotes;
     String::SplitString(&vNotes, txt, "\r\n");
 
@@ -408,13 +426,13 @@ void SetNote(_In_ const string& txt, queue<Note>& notes)
             tempNote.SetEndTiming(atof(vNoteFactor[5].c_str()));
 
         }
-        notes.push(tempNote);
+        notes.insert(make_pair(tempNote.GetTiming(), tempNote));
         vNoteFactor.clear();
     }
     DEBUG;
 }
 
-void InitMusicalObjects(_In_ char* osufile, queue<MusicalLine>& lines, queue<Note>& notes)
+void InitMusicalObjects(_In_ char* osufile, LineContainer& lines, NoteContainer& notes)
 {
     string txt = osufile;
 

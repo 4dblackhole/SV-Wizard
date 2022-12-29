@@ -1,4 +1,3 @@
-#include "../framework.h"
 #include "MusicalObject.h"
 
 MusicalObject::MusicalObject()

@@ -40,6 +40,24 @@ public:
 	inline void SetNoteColor(NOTE_COLOR t) { color = t; }
 	inline void SetImage(Image* i) { img = i; }
 
+	bool operator<(const Note& t) const
+	{
+		bool result = false;
+		if (timing < t.timing) result = true;
+		else if (timing == t.timing && color < t.color) result = true;
+
+		return result;
+	}
+
+	bool operator>(const Note& t) const
+	{
+		bool result = false;
+		if (timing > t.timing) result = true;
+		else if (timing == t.timing && color > t.color) result = true;
+
+		return result;
+	}
+
 protected:
 	int pos; //Position on the Screen
 	double speed; //Speed on the Screen
@@ -49,3 +67,5 @@ protected:
 private:
 	Image* img;
 };
+
+typedef multimap<double, Note> NoteContainer;

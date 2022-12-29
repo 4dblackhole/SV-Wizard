@@ -1,3 +1,6 @@
+#include "Objects/Note.h"
+#include "Objects/MusicalLine.h"
+#include "Singletones.h"
 #include "SVDialog.h"
 
 SVDialog::SVDialog()
@@ -18,6 +21,11 @@ SVDialog::SVDialog()
     startTiming = endTiming = 0;
     lineOffset = LINEOFFSET_DEFAULTPOS;
     dlg_Ctr = NULL;
+
+    Notes = NULL;
+    Lines = NULL;
+    txtTop = NULL;
+    txtBottom = NULL;
 }
 
 SVDialog::~SVDialog()
@@ -100,7 +108,7 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 
         case WM_CONTEXTMENU:
         {
-            POINT pt;
+            POINT pt{};
             pt.x = (short)LOWORD(lParam);
             pt.y = (short)HIWORD(lParam);
 
@@ -275,7 +283,7 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
         {
             case IDC_GENERATE:
             {
-                Generate_ValueSetting();
+                Generate();
             }
             break;
 
@@ -362,14 +370,16 @@ void SVDialog::SetEditVolume(HWND hVolume, int v)
     SetEditInt(hVolume, v);
 }
 
-void SVDialog::Generate_ValueSetting()
+BOOL SVDialog::Generate_ValueCheck()
 {
+    BOOL success = TRUE;
+
     // Load Path
     GetWindowText(dlg_Ctr->hstFileDir, mapDirectory, MAX_PATH);
     if (lstrcmp(mapDirectory, _T("Not Selected")) == 0)
     {
         MessageBox(dialogWindow, _T("Beatmap isn't Selected"), _T("Error"), MB_OK);
-
+        success = FALSE;
     }
 
     TCHAR tempTchar[MAX_PATH];
@@ -380,7 +390,7 @@ void SVDialog::Generate_ValueSetting()
     if (volume < 0 || volume>100)
     {
         MessageBox(dialogWindow, _T("Volume is out of range(0~100)"), _T("Error"), MB_OK);
-
+        success = FALSE;
     }
 
     //Load Timing Points
@@ -397,6 +407,7 @@ void SVDialog::Generate_ValueSetting()
     if (startSV == 0 || endSV == 0)
     {
         MessageBox(dialogWindow, _T("SV value is Zero"), _T("Error"), MB_OK);
+        success = FALSE;
     }
 
     //Load Line Offset
@@ -412,6 +423,99 @@ void SVDialog::Generate_ValueSetting()
     if (baseBPMenable == TRUE && baseBPM == 0)
     {
         MessageBox(dialogWindow, _T("BPM is Zero"), _T("Error"), MB_OK);
+        success = FALSE;
+    }
+
+    return success;
+}
+
+MusicalLine* SVDialog::GetCurrentLineOfNote(Note* note)
+{
+    LineContainer::iterator result;
+    result = Lines->lower_bound((note->GetTiming()));
+    result--;
+
+    if (result == Lines->end())return NULL;
+
+    return &(result->second);
+}
+
+BOOL SVDialog::Generate()
+{
+    BOOL result = TRUE;
+
+    if (Notes->empty() || Lines->empty()) return; // Check Container
+    if (Generate_ValueCheck() == FALSE) return; // Failure of Initialize
+
+    NoteContainer::iterator startNote, endNote;
+    LineContainer::iterator currentLine, nextLine;
+
+    startNote = Notes->lower_bound((double)startTiming);
+    endNote = Notes->upper_bound((double)endTiming);
+
+    if (startNote == endNote) return; // No Note detected
+
+    currentLine = Lines->lower_bound(startNote->first);
+    nextLine = currentLine--;
+
+    double startpos = startNote->first;
+    double endpos = (--endNote)->first;
+    ++endNote;
+
+    map<double, MusicalLine> tempLines;
+
+    for (NoteContainer::iterator it = startNote; it != endNote; it++)
+    {
+        double cPos = it->first + (double)lineOffset;
+        double cSV{};
+        GenerateSV(startpos, endpos, it, cSV);
+
+        int cVolume = volume;
+        GenerateVolume(startpos, endpos, it, currentLine, cVolume);
+
+    }
+
+}
+
+BOOL SVDialog::GenerateSV(double startpos, double endpos, NoteContainer::iterator it, _Out_ double& sv)
+{
+    BOOL result = TRUE;
+
+    switch (svType)
+    {
+    case SV_LINEAR:
+        sv = SHORTCUT.Interpolation_Linear(startpos, endpos, startSV, endSV, it->first);
+        break;
+
+    case SV_EXP:
+        sv = SHORTCUT.Interpolation_Exponential(startpos, endpos, startSV, endSV, it->first);
+        break;
+
+    case SV_FOCUS:
+        sv = SHORTCUT.Interpolation_Harmonic(startpos, endpos, startSV, endSV, it->first);
+        break;
+
+    default:
+        sv = 0.0;
+        result = FALSE;
+        MessageBox(dialogWindow, _T("SV Type Error"), _T("alert"), MB_OK);
+        break;
+    }
+
+    return result;
+}
+
+BOOL SVDialog::GenerateVolume(double startpos, double endpos, NoteContainer::iterator nit, LineContainer::iterator lit, _Out_ int& vol)
+{
+    BOOL result = TRUE;
+
+    if (volumeAuto == TRUE)
+    {
+
+    }
+    else
+    {
+
     }
 }
 

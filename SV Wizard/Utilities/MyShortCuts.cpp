@@ -1,3 +1,4 @@
+#include <cmath>
 #include "MyShortCuts.h"
 
 void ShortCut::TransBlt(HDC hdc, int x, int y, HBITMAP hbitmap, COLORREF clrMask)

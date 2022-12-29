@@ -1,5 +1,7 @@
-#include "Image.h"
+#include "../framework.h"
 #pragma comment(lib, "msimg32.lib")
+
+#include "Image.h"
 
 Image::Image()
 	:imageInfo(NULL), imageFileName(NULL), isTransparent(FALSE), visible(TRUE), transparentColor(RGB(0, 0, 0)), style(IMAGE_CHANGE_RESOURCE)

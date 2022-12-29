@@ -77,6 +77,9 @@ public:
 
 	inline HWND GetStFileDir() { return dlg_Ctr->hstFileDir; }//Get Static control handle which contains File Directory 
 
+	void SetNotes(NoteContainer* t) { Notes = t; }
+	void SetLines(LineContainer* t) { Lines = t; }
+	void SetTXT(string* top, string* bottom) { txtTop = top, txtBottom = bottom; }
 
 private:
 	HWND parentWindow;
@@ -86,6 +89,7 @@ private:
 
 	BOOL visible;
 	RECT dlgWrt, dlgCrt;//Window Rect, Client Rect
+
 	SORTTYPE sortType;
 	double startSV, endSV;
 	double baseBPM;
@@ -94,6 +98,11 @@ private:
 	BOOL volumeAuto, baseBPMenable;
 	TCHAR mapDirectory[MAX_PATH]{};
 
+	NoteContainer* Notes;
+	LineContainer* Lines;
+
+	string* txtTop, * txtBottom;
+
 	INT_PTR CALLBACK SVWProc(HWND, UINT, WPARAM, LPARAM);
 	static INT_PTR CALLBACK SVWProcWrapper(HWND, UINT, WPARAM, LPARAM);
 
@@ -101,7 +110,12 @@ private:
 	void SetEditInt(HWND, int);
 	void SetEditVolume(HWND, int);
 
-	void Generate_ValueSetting();
+	MusicalLine* GetCurrentLineOfNote(Note*);
+
+	BOOL Generate_ValueCheck();
+	BOOL Generate();
+	BOOL GenerateSV(double, double, NoteContainer::iterator, _Out_ double&);
+	BOOL GenerateVolume(double, double, NoteContainer::iterator, LineContainer::iterator, _Out_ int&);
 
 	void InitDialogControlHandles(LPControls&, HWND); //Init HWND values
 	void SetSVEditBySpin(HWND, LPARAM, double&, double);

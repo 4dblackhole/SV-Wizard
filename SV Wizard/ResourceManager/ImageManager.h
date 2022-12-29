@@ -1,7 +1,8 @@
 #pragma once
+#include <unordered_map>
+#include "../framework.h"
 #include "SingletonBase.h"
 #include "Image.h"
-#include <unordered_map>
 
 class ImageManager : public SingletonBase<ImageManager>
 {

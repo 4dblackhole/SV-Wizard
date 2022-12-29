@@ -77,6 +77,26 @@ public:
 	MusicalLine_tag GetInfo() { return info; }
 	void SetInfo(const MusicalLine_tag& d) { info = d; }
 
+	bool operator<(const MusicalLine& t) const
+	{
+		bool result = false;
+		if (timing < t.timing)result = true;
+		else if (timing == t.timing && info.lineType > t.info.lineType)result = true; // red line first
+
+		return result;
+	}
+
+	bool operator>(const MusicalLine& t) const
+	{
+		bool result = false;
+		if (timing > t.timing)result = true;
+		else if (timing == t.timing && info.lineType < t.info.lineType)result = true; // red line first
+
+		return result;
+	}
+
 private:
 	MusicalLine_tag info;
 };
+
+typedef multimap<double, MusicalLine> LineContainer;

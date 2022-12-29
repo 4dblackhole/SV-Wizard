@@ -1,4 +1,5 @@
 #pragma once
+#include "../framework.h"
 
 class MusicalObject
 {
@@ -21,3 +22,4 @@ protected:
 	BOOL visible;
 };
 
+typedef vector<MusicalObject> ObjectContainer;
