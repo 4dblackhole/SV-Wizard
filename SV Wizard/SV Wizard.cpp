@@ -132,7 +132,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     static POINT moustPt = { 0,0 };
     static TCHAR sss[512];
-    static TCHAR ssss[512]=_T("");
 
     static TCHAR fileDirectory[MAX_PATH] = _T("");
 
@@ -236,14 +235,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // PAINT START ======================================================
 
             BG.Render(hMemDC);
+
+#ifdef _DEBUG
             _stprintf_s(sss, _T("Client Area : %d x %d\nMouse PT : %d %d\nKiai %d, SV %d, StartTiming %d\nVolume %d\nStart SV %g End SV %g"),
                 crt.right, crt.bottom, moustPt.x, moustPt.y,
                 Dialog.GetKiaiType(), Dialog.GetSVType(), Dialog.GetStartTiming(), Dialog.GetVolume(), Dialog.GetStartSV(),Dialog.GetEndSV());
             DrawText(hMemDC, sss, lstrlen(sss), &crt, DT_LEFT);
-
-            TextOut(hMemDC, 10, 500, ssss, lstrlen(ssss));
-            
-            
+#endif
             // DOUBLE BUFFERING =================================================
             BitBlt(hdc, 0, 0, width, height, hMemDC, 0, 0, SRCCOPY);
             // PAINT END ========================================================
@@ -255,10 +253,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
 
         case WM_DESTROY:
+        {
             IMAGES.Release();
             Dialog.Release();
-            SAFE_DELETE_ARR(osuTXT)
+            SAFE_DELETE_ARR(osuTXT);
             PostQuitMessage(0);
+        }
         break;
 
         default:

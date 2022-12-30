@@ -159,12 +159,12 @@ void Image::Release()
 
 void Image::Render(HDC hdc)
 {
-	Render(hdc, imageInfo->targetX, imageInfo->targetY, 0, 0, imageInfo->origWidth, imageInfo->origHeight);
+	Render(hdc, imageInfo->targetX, imageInfo->targetY, 0, 0, imageInfo->bitmapWidth, imageInfo->bitmapHeight);
 }
 
 void Image::Render(HDC hdc, int dx, int dy)
 {
-	Render(hdc, dx, dy, 0, 0, imageInfo->origWidth, imageInfo->origHeight);
+	Render(hdc, dx, dy, 0, 0, imageInfo->bitmapWidth, imageInfo->bitmapHeight);
 }
 
 void Image::Render(HDC hdc, int dx, int dy, int sx, int sy, int sw, int sh)

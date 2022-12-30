@@ -124,73 +124,73 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
         case WM_NOTIFY:
         {
             switch (LOWORD(wParam))
-            {
-                case IDC_SPIN_STARTSV:
-                {
-                    SetSVEditBySpin(dlg_Ctr->heStartSV, lParam,startSV, 0.1);
-                }
-                break;
+        {
+        case IDC_SPIN_STARTSV:
+        {
+            SetSVEditBySpin(dlg_Ctr->heStartSV, lParam, startSV, 0.1);
+        }
+        break;
 
-                case IDC_SPIN_STARTSV_SMALL:
-                {
-                    SetSVEditBySpin(dlg_Ctr->heStartSV, lParam, startSV, 0.01);
-                }
-                break;
+        case IDC_SPIN_STARTSV_SMALL:
+        {
+            SetSVEditBySpin(dlg_Ctr->heStartSV, lParam, startSV, 0.01);
+        }
+        break;
 
-                case IDC_SPIN_ENDSV:
-                {
-                    SetSVEditBySpin(dlg_Ctr->heEndSV, lParam,endSV, 0.1);
-                }
-                break;
+        case IDC_SPIN_ENDSV:
+        {
+            SetSVEditBySpin(dlg_Ctr->heEndSV, lParam, endSV, 0.1);
+        }
+        break;
 
-                case IDC_SPIN_ENDSV_SMALL:
-                {
-                    SetSVEditBySpin(dlg_Ctr->heEndSV, lParam, endSV, 0.01);
-                }
-                break;
+        case IDC_SPIN_ENDSV_SMALL:
+        {
+            SetSVEditBySpin(dlg_Ctr->heEndSV, lParam, endSV, 0.01);
+        }
+        break;
 
-                default: break;
-            }
+        default: break;
+        }
             LPNMHDR ncode = (LPNMHDR)lParam;
             switch (ncode->code)
             {
-                case UDN_DELTAPOS:
-                {
-                    LPNMUPDOWN nmud = (LPNMUPDOWN)lParam;
-                    switch (nmud->hdr.idFrom)
-                    {
-                        case IDC_SPIN_STARTTIMING:
-                        case IDC_SPIN_ENDTIMING:
-                        {
-                            nmud->iDelta *= TIMING_SPINUNIT;
-                        }
-                        break;
-                        case IDC_SPIN_VOLUME:
-                        {
-                            nmud->iDelta *= VOLUME_SPINUNIT;
-                        }
-                        break;
-                    }
+            case UDN_DELTAPOS:
+            {
+            LPNMUPDOWN nmud = (LPNMUPDOWN)lParam;
+            switch (nmud->hdr.idFrom)
+            {
+            case IDC_SPIN_STARTTIMING:
+            case IDC_SPIN_ENDTIMING:
+            {
+                nmud->iDelta *= TIMING_SPINUNIT;
+            }
+            break;
+            case IDC_SPIN_VOLUME:
+            {
+                nmud->iDelta *= VOLUME_SPINUNIT;
+            }
+            break;
+            }
 
-                }
-                break;
-            }        
+        }
+            break;
+            }
         }
         break;
 
         case WM_HSCROLL:
         {
             if ((HWND)lParam == dlg_Ctr->hslVolume)
-            {
-                volume = (int)SendMessage(dlg_Ctr->hslVolume, TBM_GETPOS, 0, 0);
-                SetEditVolume(dlg_Ctr->heVolume, volume);
-            }
+        {
+            volume = (int)SendMessage(dlg_Ctr->hslVolume, TBM_GETPOS, 0, 0);
+            SetEditVolume(dlg_Ctr->heVolume, volume);
+        }
         }
         break;
 
         case WM_COMMAND:
         {
-        switch (HIWORD(wParam))
+            switch (HIWORD(wParam))
         {
             case EN_KILLFOCUS:
             {
@@ -198,79 +198,79 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
                 {
                     TCHAR tt[16];
 
-                    case IDC_EDIT_STARTSV:
+                case IDC_EDIT_STARTSV:
+                {
+                    GetWindowText(dlg_Ctr->heStartSV, tt, 16);
+                    double tv = _ttof(tt);
+                    if (tv != 0)startSV = tv;
+                    else
                     {
-                        GetWindowText(dlg_Ctr->heStartSV, tt, 16);
-                        double tv = _ttof(tt);
-                        if (tv != 0)startSV = tv;
-                        else
-                        {
-                            startSV = 1;
-                            _stprintf_s(tt, _T("%.lf"), startSV);
-                            SetWindowText(dlg_Ctr->heStartSV, tt);
-                        }
+                        startSV = 1;
+                        _stprintf_s(tt, _T("%.lf"), startSV);
+                        SetWindowText(dlg_Ctr->heStartSV, tt);
                     }
-                    break;
+                }
+                break;
 
-                    case IDC_EDIT_ENDSV:
+                case IDC_EDIT_ENDSV:
+                {
+                    GetWindowText(dlg_Ctr->heStartSV, tt, 16);
+                    double tv = _ttof(tt);
+                    if (tv != 0)endSV = tv;
+                    else
                     {
-                        GetWindowText(dlg_Ctr->heStartSV, tt, 16);
-                        double tv = _ttof(tt);
-                        if (tv != 0)endSV = tv;
-                        else
-                        {
-                            endSV = 1;
-                            _stprintf_s(tt, _T("%.lf"), endSV);
-                            SetWindowText(dlg_Ctr->heEndSV, tt);
-
-                        }
-                    }
-                    break;
-
-                    case IDC_EDIT_STARTTIMING:
-                    {
-                        GetWindowText(dlg_Ctr->heStartTiming, tt, 16);
-                        int tv = _ttoi(tt);
-                        startTiming = tv;
-                    }
-                    break;
-
-                    case IDC_EDIT_ENDTIMING:
-                    {
-                        GetWindowText(dlg_Ctr->heEndTiming, tt, 16);
-                        int tv = _ttoi(tt);
-                        endTiming = tv;
-                    }
-                    break;
-
-                    case IDC_EDIT_BASEBPM:
-                    {
-                        GetWindowText(dlg_Ctr->heBaseBPM, tt, 16);
-                        double tv = _ttof(tt);
-                        if (tv != 0)baseBPM = tv;
-                        else
-                        {
-                            baseBPM = 180;
-                            _stprintf_s(tt, _T("%.lf"), baseBPM);
-                            SetWindowText(dlg_Ctr->heBaseBPM, tt);
-
-                        }
-                    }
-                    break;
-
-                    case IDC_EDIT_VOLUME:
-                    {
-                        GetWindowText(dlg_Ctr->heVolume, tt, 16);
-                        int tv = _ttoi(tt);
-
-                        if (tv < VOLUMEMIN || tv > VOLUMEMAX) SetEditVolume(dlg_Ctr->heVolume, tv);
-
-                        SendMessage(dlg_Ctr->hslVolume, TBM_SETPOS, TRUE, tv);
-                        volume = (int)SendMessage(dlg_Ctr->hslVolume, TBM_GETPOS, 0, 0);
+                        endSV = 1;
+                        _stprintf_s(tt, _T("%.lf"), endSV);
+                        SetWindowText(dlg_Ctr->heEndSV, tt);
 
                     }
-                    break;
-                    default:
+                }
+                break;
+
+                case IDC_EDIT_STARTTIMING:
+                {
+                    GetWindowText(dlg_Ctr->heStartTiming, tt, 16);
+                    int tv = _ttoi(tt);
+                    startTiming = tv;
+                }
+                break;
+
+                case IDC_EDIT_ENDTIMING:
+                {
+                    GetWindowText(dlg_Ctr->heEndTiming, tt, 16);
+                    int tv = _ttoi(tt);
+                    endTiming = tv;
+                }
+                break;
+
+                case IDC_EDIT_BASEBPM:
+                {
+                    GetWindowText(dlg_Ctr->heBaseBPM, tt, 16);
+                    double tv = _ttof(tt);
+                    if (tv != 0)baseBPM = tv;
+                    else
+                    {
+                        baseBPM = 180;
+                        _stprintf_s(tt, _T("%.lf"), baseBPM);
+                        SetWindowText(dlg_Ctr->heBaseBPM, tt);
+
+                    }
+                }
+                break;
+
+                case IDC_EDIT_VOLUME:
+                {
+                    GetWindowText(dlg_Ctr->heVolume, tt, 16);
+                    int tv = _ttoi(tt);
+
+                    if (tv < VOLUMEMIN || tv > VOLUMEMAX) SetEditVolume(dlg_Ctr->heVolume, tv);
+
+                    SendMessage(dlg_Ctr->hslVolume, TBM_SETPOS, TRUE, tv);
+                    volume = (int)SendMessage(dlg_Ctr->hslVolume, TBM_GETPOS, 0, 0);
+
+                }
+                break;
+                default:
                     break;
                 }
             }
@@ -279,58 +279,59 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
             break;
         }
 
-        switch (LOWORD(wParam))
-        {
-            case IDC_GENERATE:
+            switch (LOWORD(wParam))
             {
-                Generate();
+                case IDC_GENERATE:
+                {
+                    Generate();
+                }
+                break;
+
+                case IDC_RADIO_SVTYPE_LINEAR: svType = SV_LINEAR; break;
+                case IDC_RADIO_SVTYPE_EXP: svType = SV_EXP; break;
+                case IDC_RADIO_SVTYPE_FOCUS: svType = SV_FOCUS; break;
+
+                case IDC_KIAI_AUTO: kiaiType = KIAI_AUTO; break;
+                case IDC_KIAI_ON: kiaiType = KIAI_ON; break;
+                case IDC_KIAI_OFF: kiaiType = KIAI_OFF; break;
+
+                case IDC_VOLUME_AUTO: volumeAuto = TRUE; break;
+                case IDC_VOLUME_CHANGE: volumeAuto = FALSE; break;
+
+                case ID_LOCATE_TOPLEFT:
+                {
+                    sortType = SORT_TOPLEFT;
+                    Move();
+                }
+                break;
+
+                case ID_LOCATE_TOPCENTER:
+                {
+                    sortType = SORT_TOPCENTER;
+                    Move();
+                }
+                break;
+
+                case ID_LOCATE_TOPRIGHT:
+                {
+                    sortType = SORT_TOPRIGHT;
+                    Move();
+                }
+                break;
+
+                case IDOK:
+                case IDCANCEL:
+                {
+                    EndDialog(hDlg, LOWORD(wParam));
+                    return (INT_PTR)TRUE;
+                }
+                break;
+
+                default:
+                    break;
             }
-            break;
-
-            case IDC_RADIO_SVTYPE_LINEAR: svType = SV_LINEAR; break;
-            case IDC_RADIO_SVTYPE_EXP: svType = SV_EXP; break;
-            case IDC_RADIO_SVTYPE_FOCUS: svType = SV_FOCUS; break;
-
-            case IDC_KIAI_AUTO: kiaiType = KIAI_AUTO; break;
-            case IDC_KIAI_ON: kiaiType = KIAI_ON; break;
-            case IDC_KIAI_OFF: kiaiType = KIAI_OFF; break;
-
-            case IDC_VOLUME_AUTO: volumeAuto = TRUE; break;
-            case IDC_VOLUME_CHANGE: volumeAuto = FALSE; break;
-
-            case ID_LOCATE_TOPLEFT: 
-            {
-                sortType = SORT_TOPLEFT; 
-                Move();
-            }
-            break;
-
-            case ID_LOCATE_TOPCENTER: 
-            {
-                sortType = SORT_TOPCENTER;
-                Move();
-            }
-            break;
-
-            case ID_LOCATE_TOPRIGHT: 
-            {
-                sortType = SORT_TOPRIGHT;
-                Move();
-            }
-            break;
-
-            case IDOK:
-            case IDCANCEL:
-            {
-                EndDialog(hDlg, LOWORD(wParam));
-                return (INT_PTR)TRUE;
-            }
-            break;
-
-            default:
-            break;
         }
-        }
+
     }
     return (INT_PTR)FALSE;
 }

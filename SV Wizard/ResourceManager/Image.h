@@ -23,7 +23,7 @@ class Image
 		DWORD resourceID;
 		HDC hMemDC;
 		HBITMAP hBit, hOldbit;
-		int targetX, targetY, origWidth, origHeight, bitmapWidth, bitmapHeight; // Not Original Width/Height
+		int targetX, targetY, origWidth, origHeight, bitmapWidth, bitmapHeight;
 
 		int currentFrameX, currentFrameY; // No.X Frame and No.Y Frame (zero base)
 		int maxFrameX, maxFrameY; // Maximum Frame Count (zero base)
