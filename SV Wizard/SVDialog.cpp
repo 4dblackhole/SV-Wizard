@@ -440,6 +440,7 @@ MusicalLine SVDialog::GetCurrentLineOfNote(Note* note)
 
 BOOL SVDialog::Generate()
 {
+    BOOL rs= FileBackUp(mapDirectory);
     if (Notes->empty() || Lines->empty()) return FALSE; // Check Container
     if (Generate_ValueCheck() == FALSE) return FALSE; // Failure of Initialize
 
@@ -487,8 +488,9 @@ BOOL SVDialog::Generate()
         Lines->insert(make_pair(tLine.GetTiming(), tLine));
     }
 
-    GenerateLineText(*Lines);
-    DEBUG;
+    //GenerateLineText(*Lines);
+
+    ReLoadOsuWindow();
 
     return TRUE;
 }
@@ -572,23 +574,64 @@ BOOL SVDialog::GenerateKiai(LineContainer::iterator it, _Out_ BOOL& kiai)
     return result;
 }
 
+static BOOL CALLBACK enumChild(HWND hWnd, LPARAM lParam)
+{
+    static vector<HWND>* handles = reinterpret_cast<vector<HWND>*>(lParam);
+        
+    static TCHAR str[256];
+    GetWindowText(hWnd, str, 256);
+    handles->push_back(hWnd);
+
+    return TRUE;
+}
+
+//TODO: Auto Reload
+BOOL SVDialog::ReLoadOsuWindow()
+{
+    BOOL result = TRUE;
+    tstring windowName = _T("osu!  - ");
+    TCHAR mapName[MAX_PATH];
+    GetWindowText(dlg_Ctr->hstFileDir, mapName, MAX_PATH);
+
+    windowName += mapName;
+
+    HWND hOsu = FindWindow(NULL, windowName.c_str());
+
+    if (hOsu == NULL)return FALSE;
+
+    SetFocus(hOsu);
+    vector<HWND> Childs;
+
+    //EnumChildWindows(hOsu, enumChild, reinterpret_cast<LPARAM>(&Childs));
+
+    SendMessage(hOsu, WM_KEYDOWN, VK_RIGHT, NULL);
+    SendMessage(hOsu, WM_KEYUP, VK_RIGHT, NULL);
+
+    return result;
+}
+
+BOOL SVDialog::FileBackUp(TCHAR* dir)
+{
+    return CopyFile(dir, (Path::GetFileName(dir) + tstring(_T("_backup"))).c_str(), FALSE);
+}
+
 void SVDialog::GenerateLineText(LineContainer& lines)
 {
-    HANDLE file = CreateFile(_T("temp.osu"), GENERIC_WRITE, 0, NULL,
+    HANDLE file = CreateFile(mapDirectory, GENERIC_WRITE, 0, NULL,
         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     DWORD dwWrite = 0;
 
-    WriteFile(file, txtTop->c_str(), strlen(txtTop->c_str()), &dwWrite, NULL);
+    WriteFile(file, txtTop->c_str(), (DWORD)txtTop->size(), &dwWrite, NULL);
 
     for (LineContainer::iterator it = lines.begin(); it != lines.end(); it++)
     {
         string linetxt = string();
         linetxt.reserve(50000);
         LineToText(it->second, linetxt);
-        WriteFile(file, linetxt.c_str(), linetxt.size(), &dwWrite, NULL);
+        WriteFile(file, linetxt.c_str(), (DWORD)linetxt.size(), &dwWrite, NULL);
     }
 
-    WriteFile(file, txtBottom->c_str(), txtBottom->size(), &dwWrite, NULL);
+    WriteFile(file, txtBottom->c_str(), (DWORD)txtBottom->size(), &dwWrite, NULL);
     CloseHandle(file);
 }
 

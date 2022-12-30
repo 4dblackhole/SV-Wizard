@@ -482,6 +482,7 @@ BOOL OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
             }
             else
             {
+                dialog.SetDirectory(dir);
                 tstring cpy = Path::GetFileName(dir);
                 SetWindowText(dialog.GetStFileDir(), cpy.c_str());
                 

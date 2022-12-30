@@ -80,6 +80,11 @@ public:
 	void SetNotes(NoteContainer* t) { Notes = t; }
 	void SetLines(LineContainer* t) { Lines = t; }
 	void SetTXT(string* top, string* bottom) { txtTop = top, txtBottom = bottom; }
+	void SetDirectory(TCHAR* t) 
+	{
+		_stprintf_s(mapDirectory, _T("%s"), t);
+
+	}
 
 private:
 	HWND parentWindow;
@@ -117,6 +122,9 @@ private:
 	BOOL GenerateSV(double, double, NoteContainer::iterator, LineContainer::iterator, _Out_ double&);
 	BOOL GenerateVolume(LineContainer::iterator, _Out_ int&);
 	BOOL GenerateKiai(LineContainer::iterator, _Out_ BOOL&);
+	BOOL ReLoadOsuWindow();
+
+	BOOL FileBackUp(TCHAR*);
 
 	void GenerateLineText(LineContainer&);
 	void LineToText(MusicalLine&, _Out_ string&);

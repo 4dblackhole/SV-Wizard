@@ -1,5 +1,4 @@
-﻿#pragma once
-//{{NO_DEPENDENCIES}}
+﻿//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++에서 생성한 포함 파일입니다.
 // SV Wizard.rc에서 사용되고 있습니다.
 //
@@ -61,6 +60,7 @@
 #define ID_LOCATE_TOPLEFT               32785
 #define ID_LOCATE_TOPCENTER             32786
 #define ID_LOCATE_TOPRIGHT              32787
+#define ID_FILES_UNDO                   32791
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -69,7 +69,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        136
-#define _APS_NEXT_COMMAND_VALUE         32791
+#define _APS_NEXT_COMMAND_VALUE         32792
 #define _APS_NEXT_CONTROL_VALUE         1045
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
