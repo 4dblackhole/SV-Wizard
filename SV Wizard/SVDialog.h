@@ -26,9 +26,9 @@ public:
 
 	enum KIAITYPE
 	{
-		KIAI_AUTO,
-		KIAI_ON,
 		KIAI_OFF,
+		KIAI_ON,
+		KIAI_AUTO,
 		KIAI_MAX
 	};
 
@@ -110,12 +110,16 @@ private:
 	void SetEditInt(HWND, int);
 	void SetEditVolume(HWND, int);
 
-	MusicalLine* GetCurrentLineOfNote(Note*);
+	MusicalLine GetCurrentLineOfNote(Note*);
 
 	BOOL Generate_ValueCheck();
 	BOOL Generate();
-	BOOL GenerateSV(double, double, NoteContainer::iterator, _Out_ double&);
-	BOOL GenerateVolume(double, double, NoteContainer::iterator, LineContainer::iterator, _Out_ int&);
+	BOOL GenerateSV(double, double, NoteContainer::iterator, LineContainer::iterator, _Out_ double&);
+	BOOL GenerateVolume(LineContainer::iterator, _Out_ int&);
+	BOOL GenerateKiai(LineContainer::iterator, _Out_ BOOL&);
+
+	void GenerateLineText(LineContainer&);
+	void LineToText(MusicalLine&, _Out_ string&);
 
 	void InitDialogControlHandles(LPControls&, HWND); //Init HWND values
 	void SetSVEditBySpin(HWND, LPARAM, double&, double);

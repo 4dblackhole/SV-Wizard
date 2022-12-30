@@ -305,7 +305,7 @@ void SetMusicalLine(_In_ const string& txt, LineContainer& lines)
     vector<string> vLineFactor;
     vLineFactor.reserve(8); // Timing Point, BPM, measure, Hitsound Type, Custom No, Volume, Line Type, Kiai
 
-    double currentBPM = 0.0;
+    double currentBPM = 180.0;
 
     for (int i = 0; i < vLines.size(); i++)
     {
@@ -321,12 +321,13 @@ void SetMusicalLine(_In_ const string& txt, LineContainer& lines)
         if (tempBPM > 0) // Red Line
         {
             tempMLtag.lineType = Line_RED;
-            tempMLtag.bpm = 60000.0 / tempBPM;
+            currentBPM = 60000.0 / tempBPM;
         }
         else if (tempBPM < 0) // Green Line
         {
             tempMLtag.lineType = Line_GREEN;
             tempMLtag.sv = 100.0 / -tempBPM;
+
         }
         else // can't divide by 0
         {
@@ -334,6 +335,7 @@ void SetMusicalLine(_In_ const string& txt, LineContainer& lines)
             MessageBox(hRootWindow, _T("BPM or SV Value Error"), _T("alert"), MB_OK);
             return;
         }
+        tempMLtag.bpm = currentBPM;
 
         // Measure
         tempMLtag.measure = atoi(vLineFactor[2].c_str());

@@ -51,7 +51,7 @@ struct MusicalLine_tag
 		bpm = 180.1234;
 		volume = 12;
 		measure = 9;
-		lineType = Line_MAX;
+		lineType = Line_GREEN;
 		kiai = FALSE;
 	}
 

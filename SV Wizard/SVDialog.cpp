@@ -429,23 +429,19 @@ BOOL SVDialog::Generate_ValueCheck()
     return success;
 }
 
-MusicalLine* SVDialog::GetCurrentLineOfNote(Note* note)
+MusicalLine SVDialog::GetCurrentLineOfNote(Note* note)
 {
     LineContainer::iterator result;
     result = Lines->lower_bound((note->GetTiming()));
     result--;
 
-    if (result == Lines->end())return NULL;
-
-    return &(result->second);
+    return (result->second);
 }
 
 BOOL SVDialog::Generate()
 {
-    BOOL result = TRUE;
-
-    if (Notes->empty() || Lines->empty()) return; // Check Container
-    if (Generate_ValueCheck() == FALSE) return; // Failure of Initialize
+    if (Notes->empty() || Lines->empty()) return FALSE; // Check Container
+    if (Generate_ValueCheck() == FALSE) return FALSE; // Failure of Initialize
 
     NoteContainer::iterator startNote, endNote;
     LineContainer::iterator currentLine, nextLine;
@@ -453,31 +449,51 @@ BOOL SVDialog::Generate()
     startNote = Notes->lower_bound((double)startTiming);
     endNote = Notes->upper_bound((double)endTiming);
 
-    if (startNote == endNote) return; // No Note detected
+    if (startNote == endNote) return FALSE; // No Note detected
 
-    currentLine = Lines->lower_bound(startNote->first);
-    nextLine = currentLine--;
 
     double startpos = startNote->first;
     double endpos = (--endNote)->first;
     ++endNote;
 
-    map<double, MusicalLine> tempLines;
+    //LineContainer tempLines;
+
+    currentLine = Lines->lower_bound(startNote->first);
+    nextLine = currentLine--;
 
     for (NoteContainer::iterator it = startNote; it != endNote; it++)
     {
-        double cPos = it->first + (double)lineOffset;
-        double cSV{};
-        GenerateSV(startpos, endpos, it, cSV);
+        while (nextLine != Lines->end() && it->first >= nextLine->first)
+        {
+            currentLine = nextLine++;
+        }
 
-        int cVolume = volume;
-        GenerateVolume(startpos, endpos, it, currentLine, cVolume);
+        MusicalLine tLine;
+        MusicalLine_tag tLinetag;
 
+        tLine.SetTiming(it->first + (double)lineOffset);
+
+        tLinetag.lineType = Line_GREEN;
+        tLinetag.bpm = currentLine->second.GetInfo().bpm;
+        tLinetag.measure = currentLine->second.GetInfo().measure;
+        tLinetag.hsType = currentLine->second.GetInfo().hsType;
+
+        GenerateSV(startpos, endpos, it, currentLine, tLinetag.sv);
+        GenerateVolume(currentLine, tLinetag.volume);
+        GenerateKiai(currentLine, tLinetag.kiai);
+
+        tLine.SetInfo(tLinetag);
+
+        Lines->insert(make_pair(tLine.GetTiming(), tLine));
     }
 
+    GenerateLineText(*Lines);
+    DEBUG;
+
+    return TRUE;
 }
 
-BOOL SVDialog::GenerateSV(double startpos, double endpos, NoteContainer::iterator it, _Out_ double& sv)
+BOOL SVDialog::GenerateSV(double startpos, double endpos, NoteContainer::iterator it, LineContainer::iterator currentLine, _Out_ double& sv)
 {
     BOOL result = TRUE;
 
@@ -496,27 +512,111 @@ BOOL SVDialog::GenerateSV(double startpos, double endpos, NoteContainer::iterato
         break;
 
     default:
-        sv = 0.0;
+        sv = 1.0;
         result = FALSE;
         MessageBox(dialogWindow, _T("SV Type Error"), _T("alert"), MB_OK);
         break;
     }
 
+    if (baseBPMenable == TRUE)
+    {
+        if (baseBPM == 0.0)return FALSE;
+        sv *= (baseBPM / currentLine->second.GetInfo().bpm);
+    }
+
     return result;
 }
 
-BOOL SVDialog::GenerateVolume(double startpos, double endpos, NoteContainer::iterator nit, LineContainer::iterator lit, _Out_ int& vol)
+BOOL SVDialog::GenerateVolume(LineContainer::iterator it, _Out_ int& vol)
 {
     BOOL result = TRUE;
 
     if (volumeAuto == TRUE)
     {
-
+        vol = SVDialog::volume;
     }
     else
     {
-
+        vol = it->second.GetInfo().volume;
     }
+
+    return result;
+}
+
+
+BOOL SVDialog::GenerateKiai(LineContainer::iterator it, _Out_ BOOL& kiai)
+{
+    BOOL result = TRUE;
+
+    kiai = FALSE;
+
+    switch (kiaiType)
+    {
+        case KIAI_AUTO:
+            kiai = it->second.GetInfo().kiai;
+            break;
+
+        case KIAI_ON:
+            kiai = TRUE;
+            break;
+
+        case KIAI_OFF:
+            kiai = FALSE;
+            break;
+
+        default:
+            result = FALSE;
+            break;
+    }
+
+    return result;
+}
+
+void SVDialog::GenerateLineText(LineContainer& lines)
+{
+    HANDLE file = CreateFile(_T("temp.osu"), GENERIC_WRITE, 0, NULL,
+        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    DWORD dwWrite = 0;
+
+    WriteFile(file, txtTop->c_str(), strlen(txtTop->c_str()), &dwWrite, NULL);
+
+    for (LineContainer::iterator it = lines.begin(); it != lines.end(); it++)
+    {
+        string linetxt = string();
+        linetxt.reserve(50000);
+        LineToText(it->second, linetxt);
+        WriteFile(file, linetxt.c_str(), linetxt.size(), &dwWrite, NULL);
+    }
+
+    WriteFile(file, txtBottom->c_str(), txtBottom->size(), &dwWrite, NULL);
+    CloseHandle(file);
+}
+
+void SVDialog::LineToText(MusicalLine& line,_Out_ string& txt)
+{
+    char c[99] = { 0 };
+    
+    double bpmORsv = 1.0;
+    int linecolor = 0;
+
+    if (line.GetInfo().lineType == Line_GREEN)
+    {
+        bpmORsv = -100.0 / line.GetInfo().sv;
+    }
+    else if (line.GetInfo().lineType == Line_RED)
+    {
+        bpmORsv = 60000.0 / line.GetInfo().bpm;
+        linecolor = 1;
+    }
+
+    MusicalLine_tag&& info = (line.GetInfo());
+
+    sprintf_s(c, "%.12lf,%.12lf,%d,%d,%d,%d,%d,%d\r\n",
+        line.GetTiming(), bpmORsv, info.measure,
+        info.hsType.sampleSet, info.hsType.idx,
+        info.volume, linecolor, (int)info.kiai);
+
+    txt = c;
 }
 
 void SVDialog::InitDialogControlHandles(LPControls& dlg_Ctr, HWND hDlg)
