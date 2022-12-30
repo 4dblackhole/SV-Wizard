@@ -3,12 +3,12 @@
 
 void ShortCut::TransBlt(HDC hdc, int x, int y, HBITMAP hbitmap, COLORREF clrMask)
 {
-	BITMAP bm;
+	BITMAP bm{};
 	COLORREF cColor;
 	HBITMAP bmAndBack, bmAndObject, bmAndMem, bmSave;
 	HBITMAP bmBackOld, bmObjectOld, bmMemOld, bmSaveOld;
 	HDC		hdcMem, hdcBack, hdcObject, hdcTemp, hdcSave;
-	POINT	ptSize;
+	POINT	ptSize{};
 
 	hdcTemp = CreateCompatibleDC(hdc);
 	SelectObject(hdcTemp, hbitmap);

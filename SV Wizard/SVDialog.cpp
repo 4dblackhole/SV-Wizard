@@ -489,7 +489,7 @@ BOOL SVDialog::Generate()
         Lines->insert(make_pair(tLine.GetTiming(), tLine));
     }
 
-    //GenerateLineText(*Lines);
+    GenerateLineText(*Lines);
 
     ReLoadOsuWindow();
 

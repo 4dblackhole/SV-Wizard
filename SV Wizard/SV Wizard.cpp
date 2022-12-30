@@ -529,10 +529,10 @@ char* GetOsuFileTXT(_In_ TCHAR* dir)
     assert(isChecked); //load check
     
     DWORD fileSize = GetFileSize(hFile, NULL);
-    DWORD dwRead;
+    DWORD dwRead = 0;
 
     char* resultTXT = new char[fileSize + 1];
-    assert(ReadFile(hFile, resultTXT, fileSize, &dwRead, NULL));
+    ReadFile(hFile, resultTXT, fileSize, &dwRead, NULL);
     resultTXT[fileSize] = 0;
 
     if (hFile != NULL)
