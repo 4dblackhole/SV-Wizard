@@ -103,6 +103,8 @@ private:
 	BOOL volumeAuto, baseBPMenable;
 	TCHAR mapDirectory[MAX_PATH]{};
 
+	char* osuTXT; //most of osu files use UTF-8
+
 	NoteContainer* Notes;
 	LineContainer* Lines;
 
@@ -133,3 +135,11 @@ private:
 	void SetSVEditBySpin(HWND, LPARAM, double&, double);
 };
 
+
+void InitMusicalObjects(_In_ char* osufile, LineContainer& lines, NoteContainer& notes);
+
+void SetMusicalLine(_In_ const string& txt, LineContainer& lines);
+BOOL SetMusicalLineTiming(MusicalLine&, _In_ const string&, LineContainer&);
+void SeparateOsuTXT(_In_ const string& txt, _Out_ string& top, _Out_ string& bottom);
+void SetNote(_In_ const string& txt, NoteContainer& notes);
+char* GetOsuFileTXT(_In_ TCHAR*);

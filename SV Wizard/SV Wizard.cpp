@@ -135,7 +135,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     static TCHAR fileDirectory[MAX_PATH] = _T("");
 
-    static char* osuTXT; //most of osu files use UTF-8
+    //static char* osuTXT; //most of osu files use UTF-8
     static string osuTXTtop, osuTXTbottom;
 
     static LineContainer qLines;
@@ -198,10 +198,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {
                     if (OpenFileDirectory(fileDirectory, Dialog) == TRUE)
                     {
-                        SAFE_DELETE_ARR(osuTXT)
-                        osuTXT = GetOsuFileTXT(fileDirectory);
-                        InitMusicalObjects(osuTXT, qLines, qNotes);
-                        SeparateOsuTXT(osuTXT, osuTXTtop, osuTXTbottom);
+                        //SAFE_DELETE_ARR(osuTXT)
+                        //osuTXT = GetOsuFileTXT(fileDirectory);
+                        //InitMusicalObjects(osuTXT, qLines, qNotes);
+                        //SeparateOsuTXT(osuTXT, osuTXTtop, osuTXTbottom);
                     }
                 }
                 break; 
@@ -256,7 +256,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             IMAGES.Release();
             Dialog.Release();
-            SAFE_DELETE_ARR(osuTXT);
+            //SAFE_DELETE_ARR(osuTXT);
             PostQuitMessage(0);
         }
         break;
@@ -285,176 +285,6 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
-}
-
-void SeparateOsuTXT(_In_ const string& txt, _Out_ string& top, _Out_ string& bottom)
-{
-    size_t timingPos = txt.find(timingPointIdc) + timingPointIdc.size();
-    size_t hitObjPos = txt.find(hitObjectIdc);
-
-    top = txt.substr(0, timingPos);
-    bottom = txt.substr(hitObjPos, txt.size());
-}
-
-void SetMusicalLine(_In_ const string& txt, LineContainer& lines)
-{
-    lines.clear();
-    vector<string> vLines;
-    String::SplitString(&vLines, txt, "\r\n");
-
-    vector<string> vLineFactor;
-    vLineFactor.reserve(8); // Timing Point, BPM, measure, Hitsound Type, Custom No, Volume, Line Type, Kiai
-
-    double currentBPM = 180.0;
-
-    for (int i = 0; i < vLines.size(); i++)
-    {
-        String::SplitString(&vLineFactor, vLines[i], ",");
-        MusicalLine tempML;
-        MusicalLine_tag tempMLtag;
-
-        // Timing Point
-        tempML.SetTiming(atof(vLineFactor[0].c_str()));
-
-        // BPM or SV
-        double tempBPM = atof(vLineFactor[1].c_str());
-        if (tempBPM > 0) // Red Line
-        {
-            tempMLtag.lineType = Line_RED;
-            currentBPM = 60000.0 / tempBPM;
-        }
-        else if (tempBPM < 0) // Green Line
-        {
-            tempMLtag.lineType = Line_GREEN;
-            tempMLtag.sv = 100.0 / -tempBPM;
-
-        }
-        else // can't divide by 0
-        {
-            vLineFactor.clear();
-            MessageBox(hRootWindow, _T("BPM or SV Value Error"), _T("alert"), MB_OK);
-            return;
-        }
-        tempMLtag.bpm = currentBPM;
-
-        // Measure
-        tempMLtag.measure = atoi(vLineFactor[2].c_str());
-
-        // HitSound
-        tempMLtag.hsType.sampleSet = (HitSound_SampleSet)atoi(vLineFactor[3].c_str());
-        tempMLtag.hsType.idx = atoi(vLineFactor[4].c_str());
-
-        // Volume
-        tempMLtag.volume = atoi(vLineFactor[5].c_str());
-
-        // Kiai
-        tempMLtag.kiai = (BOOL)atoi(vLineFactor[7].c_str());
-
-        // Register Information
-        tempML.SetInfo(tempMLtag);
-
-        lines.insert(make_pair(tempML.GetTiming(), tempML));
-        vLineFactor.clear();
-    }
-}
-
-
-void SetNoteType(Note& note, int flag, _Out_ BOOL& LNflag)
-{
-    /* each bit
-    0: Hit circle
-    1: Slider
-    3: Spinner
-    7: osu!mania hold
-    The remaining bits are used for distinguishing new combos and optionally skipping combo colours (commonly called "colour hax"):
-    2: New combo
-    4–6: A 3-bit integer specifying how many combo colours to skip, if this object starts a new combo.
-    */
-    LNflag = FALSE;
-
-    if (flag == 0 || flag == 1)note.SetNoteType(Note::TYPE_CIRCLE);
-    else if ((flag & (1 << 1)) != 0)note.SetNoteType(Note::TYPE_SLIDER), LNflag = TRUE;
-    else if ((flag & (1 << 3)) != 0)note.SetNoteType(Note::TYPE_SPINNER), LNflag = TRUE;
-    else if ((flag & (1 << 7)) != 0)note.SetNoteType(Note::TYPE_OSUMANIA_HOLD), LNflag = TRUE;
-}
-
-void SetNoteColor(Note& note, int flag)
-{
-    /* each bit
-    0: Normal
-    1: Whistle
-    2: Finish
-    3: Clap
-    If no bits are set, the normal hitsound is used by default.
-    */
-
-    if ((flag & (1 << 1)) != 0 || (flag & (1 << 3)) != 0)// kat check
-    {
-        if ((flag & (1 << 2)) != 0)   note.SetNoteColor(Note::COLOR_BIGKAT);
-        else                        note.SetNoteColor(Note::COLOR_KAT);
-    }
-    else
-    {
-        if ((flag & (1 << 2)) != 0)   note.SetNoteColor(Note::COLOR_BIGDON);
-        else                        note.SetNoteColor(Note::COLOR_DON);
-    }
-}
-
-void SetNote(_In_ const string& txt, NoteContainer& notes)
-{
-    notes.clear();
-    vector<string> vNotes;
-    String::SplitString(&vNotes, txt, "\r\n");
-
-    vector<string> vNoteFactor;
-    vNoteFactor.reserve(11); // see https://osu.ppy.sh/wiki/en/Client/File_formats/Osu_%28file_format%29
-
-    for (int i = 0; i < vNotes.size(); i++)
-    {
-        BOOL lncheck = FALSE;
-        String::SplitString(&vNoteFactor, vNotes[i], ",");
-        Note tempNote;
-
-        // Timing
-        tempNote.SetTiming(atof(vNoteFactor[2].c_str()));
-
-        // Note Type
-        SetNoteType(tempNote, atoi(vNoteFactor[3].c_str()), lncheck);
-
-        SetNoteColor(tempNote, atoi(vNoteFactor[4].c_str()));
-
-        if (lncheck == TRUE)
-        {
-            tempNote.SetEndTiming(atof(vNoteFactor[5].c_str()));
-
-        }
-        notes.insert(make_pair(tempNote.GetTiming(), tempNote));
-        vNoteFactor.clear();
-    }
-    DEBUG;
-}
-
-void InitMusicalObjects(_In_ char* osufile, LineContainer& lines, NoteContainer& notes)
-{
-    string txt = osufile;
-
-    // Init Lines =============================================================
-    size_t startPoint = txt.find(timingPointIdc);
-    size_t endPoint = txt.find(hitObjectIdc);
-
-    if (startPoint == string::npos|| endPoint==string::npos)
-    {
-        MessageBox(hRootWindow, _T("No Indicator Detected"), _T("alert"), MB_OK);
-        return;
-    }
-
-    startPoint += timingPointIdc.size(); //index of next char of indicator
-    string objectTXT = txt.substr(startPoint, endPoint - startPoint); //Lines Area
-    SetMusicalLine(objectTXT, lines);
-
-    endPoint += hitObjectIdc.size();
-    objectTXT = txt.substr(endPoint);
-    SetNote(objectTXT, notes);
 }
 
 BOOL OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
@@ -518,28 +348,4 @@ BOOL CheckUTF8(_In_ TCHAR* dir)
     CloseHandle(hFile);
 
     return result;
-}
-
-char* GetOsuFileTXT(_In_ TCHAR* dir)
-{
-    assert(lstrlen(dir) > 0); //length check
-
-    HANDLE hFile = CreateFile(dir, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    bool isChecked = hFile != INVALID_HANDLE_VALUE;
-    assert(isChecked); //load check
-    
-    DWORD fileSize = GetFileSize(hFile, NULL);
-    DWORD dwRead = 0;
-
-    char* resultTXT = new char[fileSize + 1];
-    ReadFile(hFile, resultTXT, fileSize, &dwRead, NULL);
-    resultTXT[fileSize] = 0;
-
-    if (hFile != NULL)
-    {
-        CloseHandle(hFile);
-        hFile = NULL;
-    }
-
-    return resultTXT;
 }
