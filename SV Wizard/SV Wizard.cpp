@@ -343,7 +343,7 @@ BOOL CheckUTF8(_In_ TCHAR* dir)
     assert(isChecked); //load check
 
     WORD unicode{};
-    assert(ReadFile(hFile, &unicode, sizeof(WORD), NULL, NULL));
+    ReadFile(hFile, &unicode, sizeof(WORD), NULL, NULL);
 
     if (unicode == 0xfeff || unicode == 0xffef) // UTF 16 => FALSE
     {
@@ -365,11 +365,11 @@ BOOL CheckOsuVersion(_In_ TCHAR* dir)
     assert(isChecked); //load check
 
     string version;
-    char temp = 111;
+    char temp = 0;
     
     while (temp != '\n')
     {
-        assert(ReadFile(hFile, &temp, sizeof(char), NULL, NULL));
+        ReadFile(hFile, &temp, sizeof(char), NULL, NULL);
         version += temp;
     }
 

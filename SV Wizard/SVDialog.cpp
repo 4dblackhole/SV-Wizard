@@ -26,6 +26,8 @@ SVDialog::SVDialog()
     Lines = NULL;
     txtTop = NULL;
     txtBottom = NULL;
+
+    osuTXT = NULL;
 }
 
 SVDialog::~SVDialog()
@@ -335,6 +337,7 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
                     break;
             }
         }
+        break;
 
         case WM_DESTROY:
         {
