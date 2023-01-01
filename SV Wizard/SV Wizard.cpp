@@ -310,6 +310,11 @@ BOOL OpenFileDirectory(_Out_ TCHAR* dir, SVDialog& dialog)
                 MessageBox(hRootWindow, _T("File must be UTF-8"), _T("alert"), MB_OK);
                 return FALSE;
             }
+            else if (CheckOsuVersion(dir) == FALSE)
+            {
+                MessageBox(hRootWindow, _T("osu File Version must be 14"), _T("alert"), MB_OK);
+                return FALSE;
+            }
             else
             {
                 dialog.SetDirectory(dir);
@@ -344,6 +349,35 @@ BOOL CheckUTF8(_In_ TCHAR* dir)
     {
         result = FALSE;
     }
+
+    CloseHandle(hFile);
+
+    return result;
+}
+
+
+BOOL CheckOsuVersion(_In_ TCHAR* dir)
+{
+    BOOL result = TRUE;
+
+    HANDLE hFile = CreateFile(dir, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    bool isChecked = hFile != INVALID_HANDLE_VALUE;
+    assert(isChecked); //load check
+
+    string version;
+    char temp = 111;
+    
+    while (temp != '\n')
+    {
+        assert(ReadFile(hFile, &temp, sizeof(char), NULL, NULL));
+        version += temp;
+    }
+
+    size_t locate = version.find("format v") + strlen("format v");
+    string check = version.substr(locate, version.size());
+
+    int val = atoi(check.c_str());
+    if (val != 14)result = FALSE;
 
     CloseHandle(hFile);
 
