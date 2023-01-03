@@ -133,6 +133,8 @@ private:
 
 	void InitDialogControlHandles(LPControls&, HWND); //Init HWND values
 	void SetSVEditBySpin(HWND, LPARAM, double&, double);
+
+	void MoveIteratorToNext(LineContainer::iterator&, LineContainer::iterator&);
 };
 
 

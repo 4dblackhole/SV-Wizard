@@ -146,7 +146,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_CREATE:
         {
             Dialog.Init(IDD_SVWIZARD, hWnd);
-            //Dialog.SetSortType(SVDialog::SORT_TOPLEFT);
+            Dialog.SetSortType(SVDialog::SORT_TOPLEFT);
 
             Dialog.SetLines(&qLines);
             Dialog.SetNotes(&qNotes);
@@ -155,7 +155,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             IMAGES.AddImage(_T("youmuImg"), IDB_YOUMUBG);
             IMAGES.AddImage(_T("nmImg"), IDB_NIGHTMAREBG);
 
-            BG.SetBackGround(hWnd, IMAGES.FindImage(_T("youmuImg")));
+            BG.SetBackGround(hWnd, IMAGES.FindImage(_T("nmImg")));
             BG.SetBGMinX(double(Dialog.GetDialogWidth() + DIALOGDISTANCE * 2));
             BG.SetBGMinY(double(Dialog.GetDialogHeight() + DIALOGDISTANCE * 2));
 

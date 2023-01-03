@@ -473,14 +473,19 @@ BOOL SVDialog::Generate()
 
     //LineContainer tempLines;
 
-    currentLine = Lines->lower_bound(startNote->first);
+    currentLine = Lines->lower_bound(startNote->first + lineOffset);
     nextLine = currentLine--;
+
+    if (currentLine == Lines->end()) // can't insert any green lines in front of first red line
+    {
+        startNote++;
+    }
 
     for (NoteContainer::iterator it = startNote; it != endNote; it++)
     {
-        while (nextLine != Lines->end() && it->first >= nextLine->first)
+        while (nextLine != Lines->end() && it->first + lineOffset >= nextLine->first)
         {
-            currentLine = nextLine++;
+            MoveIteratorToNext(currentLine, nextLine);
         }
 
         MusicalLine tLine;
@@ -674,6 +679,11 @@ void SVDialog::LineToText(MusicalLine& line,_Out_ string& txt)
         info.volume, linecolor, (int)info.kiai);
 
     txt = c;
+}
+
+void SVDialog::MoveIteratorToNext(LineContainer::iterator& current, LineContainer::iterator& next)
+{
+    current = next++;
 }
 
 void SVDialog::InitDialogControlHandles(LPControls& dlg_Ctr, HWND hDlg)
