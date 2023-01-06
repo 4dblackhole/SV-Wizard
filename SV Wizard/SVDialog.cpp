@@ -552,13 +552,13 @@ BOOL SVDialog::GenerateVolume(LineContainer::iterator it, _Out_ int& vol)
 {
     BOOL result = TRUE;
 
-    if (volumeAuto == TRUE)
+    if (volumeAuto == TRUE) // Get Current Volume
     {
-        vol = SVDialog::volume;
+        vol = it->second.GetInfo().volume;
     }
     else
     {
-        vol = it->second.GetInfo().volume;
+        vol = SVDialog::volume; // Change Volume you set
     }
 
     return result;
