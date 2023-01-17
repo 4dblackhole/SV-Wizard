@@ -1,7 +1,7 @@
 # SV-Wizard
 
 This is a tool helps making osu SV objects.
-It reads .osu file and performs interpolation to generate green lines which have appropriate speed for each notes.
+It reads .osu file and performs interpolation to generate green lines with appropriate speed for each notes.
 
 When you press "Generate" button, this application reads datas from .osu file, and generate objects.
 so you don't need to concern about incoherence between memory area of this application and existing .osu file.
