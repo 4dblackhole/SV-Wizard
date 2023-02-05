@@ -196,13 +196,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 case IDM_OPEN:
                 {
-                    if (OpenFileDirectory(fileDirectory, Dialog) == TRUE)
-                    {
-                        //SAFE_DELETE_ARR(osuTXT)
-                        //osuTXT = GetOsuFileTXT(fileDirectory);
-                        //InitMusicalObjects(osuTXT, qLines, qNotes);
-                        //SeparateOsuTXT(osuTXT, osuTXTtop, osuTXTbottom);
-                    }
+                    OpenFileDirectory(fileDirectory, Dialog);
                 }
                 break; 
 
@@ -343,14 +337,22 @@ BOOL CheckUTF8(_In_ TCHAR* dir)
     assert(isChecked); //load check
 
     WORD unicode{};
-    ReadFile(hFile, &unicode, sizeof(WORD), NULL, NULL);
+    BOOL readResult = 0;
+    readResult = ReadFile(hFile, &unicode, sizeof(WORD), NULL, NULL);
 
-    if (unicode == 0xfeff || unicode == 0xffef) // UTF 16 => FALSE
+    if (readResult != 0)
     {
-        result = FALSE;
+        if (unicode == 0xfeff || unicode == 0xffef) // UTF 16 => FALSE
+        {
+            result = FALSE;
+        }
     }
 
-    CloseHandle(hFile);
+    if (hFile != NULL)
+    {
+        CloseHandle(hFile);
+        hFile = NULL;
+    }
 
     return result;
 }
@@ -369,8 +371,8 @@ BOOL CheckOsuVersion(_In_ TCHAR* dir)
     
     while (temp != '\n')
     {
-        ReadFile(hFile, &temp, sizeof(char), NULL, NULL);
-        version += temp;
+        BOOL readResult = ReadFile(hFile, &temp, sizeof(char), NULL, NULL);
+        if (readResult != 0)version += temp;
     }
 
     size_t locate = version.find("format v") + strlen("format v");
@@ -379,7 +381,11 @@ BOOL CheckOsuVersion(_In_ TCHAR* dir)
     int val = atoi(check.c_str());
     if (val != 14)result = FALSE;
 
-    CloseHandle(hFile);
+    if (hFile != NULL)
+    {
+        CloseHandle(hFile);
+        hFile = NULL;
+    }
 
     return result;
 }

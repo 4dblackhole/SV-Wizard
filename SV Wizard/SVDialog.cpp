@@ -126,56 +126,56 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
         case WM_NOTIFY:
         {
             switch (LOWORD(wParam))
-        {
-        case IDC_SPIN_STARTSV:
-        {
-            SetSVEditBySpin(dlg_Ctr->heStartSV, lParam, startSV, 0.1);
-        }
-        break;
+            {
+                case IDC_SPIN_STARTSV:
+                {
+                    SetSVEditBySpin(dlg_Ctr->heStartSV, lParam, startSV, 0.1);
+                }
+                break;
 
-        case IDC_SPIN_STARTSV_SMALL:
-        {
-            SetSVEditBySpin(dlg_Ctr->heStartSV, lParam, startSV, 0.01);
-        }
-        break;
+                case IDC_SPIN_STARTSV_SMALL:
+                {
+                    SetSVEditBySpin(dlg_Ctr->heStartSV, lParam, startSV, 0.01);
+                }
+                break;
 
-        case IDC_SPIN_ENDSV:
-        {
-            SetSVEditBySpin(dlg_Ctr->heEndSV, lParam, endSV, 0.1);
-        }
-        break;
+                case IDC_SPIN_ENDSV:
+                {
+                    SetSVEditBySpin(dlg_Ctr->heEndSV, lParam, endSV, 0.1);
+                }
+                break;
 
-        case IDC_SPIN_ENDSV_SMALL:
-        {
-            SetSVEditBySpin(dlg_Ctr->heEndSV, lParam, endSV, 0.01);
-        }
-        break;
+                case IDC_SPIN_ENDSV_SMALL:
+                {
+                    SetSVEditBySpin(dlg_Ctr->heEndSV, lParam, endSV, 0.01);
+                }
+                break;
 
-        default: break;
-        }
+                default: break;
+            }
             LPNMHDR ncode = (LPNMHDR)lParam;
             switch (ncode->code)
             {
-            case UDN_DELTAPOS:
-            {
-            LPNMUPDOWN nmud = (LPNMUPDOWN)lParam;
-            switch (nmud->hdr.idFrom)
-            {
-            case IDC_SPIN_STARTTIMING:
-            case IDC_SPIN_ENDTIMING:
-            {
-                nmud->iDelta *= TIMING_SPINUNIT;
-            }
-            break;
-            case IDC_SPIN_VOLUME:
-            {
-                nmud->iDelta *= VOLUME_SPINUNIT;
-            }
-            break;
-            }
+                case UDN_DELTAPOS:
+                {
+                    LPNMUPDOWN nmud = (LPNMUPDOWN)lParam;
+                    switch (nmud->hdr.idFrom)
+                    {
+                        case IDC_SPIN_STARTTIMING:
+                        case IDC_SPIN_ENDTIMING:
+                        {
+                            nmud->iDelta *= TIMING_SPINUNIT;
+                        }
+                        break;
+                        case IDC_SPIN_VOLUME:
+                        {
+                            nmud->iDelta *= VOLUME_SPINUNIT;
+                        }
+                        break;
+                    }
 
-        }
-            break;
+                }
+                break;
             }
         }
         break;
@@ -286,10 +286,17 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
                 case IDC_GENERATE:
                 {
                     SAFE_DELETE_ARR(osuTXT)
-                    osuTXT = GetOsuFileTXT(mapDirectory);
+                    osuTXT = ReadOsuFileTXT(mapDirectory);
+                    if (osuTXT == NULL)
+                    {
+                        MessageBox(hDlg, _T("No File Selected"), _T("alert"), MB_OK);
+                        break;
+                    }
+
                     InitMusicalObjects(osuTXT, *Lines, *Notes);
                     SeparateOsuTXT(osuTXT, *txtTop, *txtBottom);
                     Generate();
+                    ReLoadOsuWindow();
                 }
                 break;
 
@@ -509,8 +516,6 @@ BOOL SVDialog::Generate()
 
     GenerateLineText(*Lines);
 
-    ReLoadOsuWindow();
-
     return TRUE;
 }
 
@@ -615,16 +620,18 @@ BOOL SVDialog::ReLoadOsuWindow()
     windowName += mapName;
 
     HWND hOsu = FindWindow(NULL, windowName.c_str());
-
+   
     if (hOsu == NULL)return FALSE;
 
+    //RECT rp;
+    //SHORTCUT.SetClientRect(hOsu, 1300, 600);
     SetFocus(hOsu);
-    vector<HWND> Childs;
-
+    
+    //vector<HWND> Childs;
     //EnumChildWindows(hOsu, enumChild, reinterpret_cast<LPARAM>(&Childs));
 
-    SendMessage(hOsu, WM_KEYDOWN, VK_RIGHT, NULL);
-    SendMessage(hOsu, WM_KEYUP, VK_RIGHT, NULL);
+    PostMessage(hOsu, WM_KEYDOWN, 'V', NULL);
+    PostMessage(hOsu, WM_KEYUP, 'V', NULL);
 
     return result;
 }
@@ -963,9 +970,9 @@ void InitMusicalObjects(_In_ char* osufile, LineContainer& lines, NoteContainer&
 }
 
 
-char* GetOsuFileTXT(_In_ TCHAR* dir)
+char* ReadOsuFileTXT(_In_ TCHAR* dir)
 {
-    assert(lstrlen(dir) > 0); //length check
+    if (lstrlen(dir) < 1)return NULL; //length check
 
     HANDLE hFile = CreateFile(dir, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     bool isChecked = hFile != INVALID_HANDLE_VALUE;
@@ -973,18 +980,36 @@ char* GetOsuFileTXT(_In_ TCHAR* dir)
 
     DWORD fileSize = GetFileSize(hFile, NULL);
     DWORD dwRead = 0;
-
+    BOOL readResult = 0;
     char* resultTXT = new char[fileSize + 1];
-    ReadFile(hFile, resultTXT, fileSize, &dwRead, NULL);
-    
-
-    resultTXT[fileSize] = 0;
+    readResult = ReadFile(hFile, resultTXT, fileSize, &dwRead, NULL);
+    if (readResult != 0)
+    {
+        resultTXT[fileSize] = 0;
+    }
+    else
+    {
+        MessageBox(hRootWindow, _T("osu File Road Failure"), _T("alert"), MB_OK);
+        SAFE_DELETE_ARR(resultTXT);
+    }
 
     if (hFile != NULL)
     {
         CloseHandle(hFile);
         hFile = NULL;
     }
-
+    
     return resultTXT;
+}
+
+BOOL CheckOsuFileTXT(_In_ char* txt, _In_ TCHAR* dir)
+{
+    SAFE_DELETE_ARR(txt);
+    txt = ReadOsuFileTXT(dir);
+    if (txt == NULL)
+    {
+        MessageBox(hRootWindow, _T("No File Selected"), _T("alert"), MB_OK);
+        return FALSE;
+    }
+    return TRUE;
 }
