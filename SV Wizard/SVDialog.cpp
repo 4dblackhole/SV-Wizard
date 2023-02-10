@@ -285,13 +285,7 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
             {
                 case IDC_GENERATE:
                 {
-                    SAFE_DELETE_ARR(osuTXT)
-                    osuTXT = ReadOsuFileTXT(mapDirectory);
-                    if (osuTXT == NULL)
-                    {
-                        MessageBox(hDlg, _T("No File Selected"), _T("alert"), MB_OK);
-                        break;
-                    }
+                    if (CheckOsuFileTXT(osuTXT, mapDirectory) == FALSE) break;
 
                     InitMusicalObjects(osuTXT, *Lines, *Notes);
                     SeparateOsuTXT(osuTXT, *txtTop, *txtBottom);
@@ -638,7 +632,14 @@ BOOL SVDialog::ReLoadOsuWindow()
 
 BOOL SVDialog::FileBackUp(TCHAR* dir)
 {
-    return CopyFile(dir, (Path::GetFileName(dir) + tstring(_T("_backup"))).c_str(), FALSE);
+    //checkbox Check
+    BOOL backup = FALSE;
+    if (SendMessage(dlg_Ctr->hbBackUp, BM_GETCHECK, 0, 0) == BST_CHECKED)backup = TRUE;
+
+    BOOL result = TRUE; 
+    if (backup == TRUE)result = CopyFile(dir, (Path::GetFileName(dir) + tstring(_T("_backup"))).c_str(), FALSE);
+
+    return result;
 }
 
 void SVDialog::GenerateLineText(LineContainer& lines)
@@ -715,6 +716,8 @@ void SVDialog::InitDialogControlHandles(LPControls& dlg_Ctr, HWND hDlg)
     dlg_Ctr->heVolume = GetDlgItem(hDlg, IDC_EDIT_VOLUME);
     dlg_Ctr->hslVolume = GetDlgItem(hDlg, IDC_SLIDER_VOLUME);
 
+    dlg_Ctr->hbBackUp = GetDlgItem(hDlg, IDC_CHECK_BACKUP);
+
     // Init Spin Controls
     dlg_Ctr->hspStartSV = GetDlgItem(hDlg, IDC_SPIN_STARTSV);
     dlg_Ctr->hspStartSVsm = GetDlgItem(hDlg, IDC_SPIN_STARTSV_SMALL);
@@ -729,6 +732,7 @@ void SVDialog::InitDialogControlHandles(LPControls& dlg_Ctr, HWND hDlg)
     dlg_Ctr->hspVolume = GetDlgItem(hDlg, IDC_SPIN_VOLUME);
     dlg_Ctr->hspVolumesm = GetDlgItem(hDlg, IDC_SPIN_VOLUME_SMALL);
     dlg_Ctr->hspLineOffset = GetDlgItem(hDlg, IDC_SPIN_LINEOFFSET);
+
 
 
     SetWindowLongPtr(hDlg, GWL_STYLE, 0);
@@ -781,7 +785,6 @@ void SVDialog::InitDialogControlHandles(LPControls& dlg_Ctr, HWND hDlg)
     SendMessage(dlg_Ctr->hspVolume, UDM_SETRANGE, 0, MAKELPARAM(VOLUMEMAX, VOLUMEMIN));
     SendMessage(dlg_Ctr->hspVolumesm, UDM_SETRANGE, 0, MAKELPARAM(VOLUMEMAX, VOLUMEMIN));
     SendMessage(dlg_Ctr->hspLineOffset, UDM_SETRANGE, 0, MAKELPARAM(25, -25));
-
 }
 
 void SVDialog::SetSVEditBySpin(HWND editCtr, LPARAM lParam, double& target, double delta)
@@ -1002,7 +1005,7 @@ char* ReadOsuFileTXT(_In_ TCHAR* dir)
     return resultTXT;
 }
 
-BOOL CheckOsuFileTXT(_In_ char* txt, _In_ TCHAR* dir)
+BOOL CheckOsuFileTXT(_In_ char* &txt, _In_ TCHAR* dir)
 {
     SAFE_DELETE_ARR(txt);
     txt = ReadOsuFileTXT(dir);

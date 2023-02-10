@@ -50,6 +50,8 @@
 #define IDC_SPIN_STARTTIMING_SMALL      1031
 #define IDC_CHECK_BASEBPM               1032
 #define IDC_SPIN_LINEOFFSET             1033
+#define IDC_CHECK1                      1045
+#define IDC_CHECK_BACKUP                1045
 #define IDM_OPEN                        32776
 #define IDM_SAVE                        32777
 #define ID_DIALOG_MOVE                  32780
@@ -70,7 +72,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         32792
-#define _APS_NEXT_CONTROL_VALUE         1045
+#define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

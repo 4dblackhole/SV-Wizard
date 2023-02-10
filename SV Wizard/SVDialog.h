@@ -48,6 +48,7 @@ public:
 		HWND hslVolume;
 		HWND hspStartSV, hspStartSVsm, hspEndSV, hspEndSVsm, hspStartTiming, hspStartTimingsm, hspEndTiming, hspEndTimingsm;
 		HWND hspVolume, hspVolumesm, hspLineOffset;
+		HWND hbBackUp;
 
 	}Controls, * LPControls;
 
@@ -145,4 +146,4 @@ BOOL SetMusicalLineTiming(MusicalLine&, _In_ const string&, LineContainer&);
 void SeparateOsuTXT(_In_ const string& txt, _Out_ string& top, _Out_ string& bottom);
 void SetNote(_In_ const string& txt, NoteContainer& notes);
 char* ReadOsuFileTXT(_In_ TCHAR*);
-BOOL CheckOsuFileTXT(_In_ char*, _In_ TCHAR*);
+BOOL CheckOsuFileTXT(_In_ char*&, _In_ TCHAR*);
