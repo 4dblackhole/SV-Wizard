@@ -289,8 +289,8 @@ INT_PTR CALLBACK SVDialog::SVWProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 
                     InitMusicalObjects(osuTXT, *Lines, *Notes);
                     SeparateOsuTXT(osuTXT, *txtTop, *txtBottom);
-                    Generate();
-                    ReLoadOsuWindow();
+                    if (Generate()        == FALSE) break;
+                    if (ReLoadOsuWindow() == FALSE) break;
                 }
                 break;
 
@@ -456,6 +456,7 @@ MusicalLine SVDialog::GetCurrentLineOfNote(Note* note)
 BOOL SVDialog::Generate()
 {
     BOOL rs = FileBackUp(mapDirectory);
+    if (startTiming > endTiming) return FALSE; //No Area Detected
     if (Notes->empty() || Lines->empty()) return FALSE; // Check Container
     if (Generate_ValueCheck() == FALSE) return FALSE; // Failure of Initialize
 
