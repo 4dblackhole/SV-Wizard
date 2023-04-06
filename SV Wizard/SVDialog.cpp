@@ -682,7 +682,7 @@ void SVDialog::LineToText(MusicalLine& line,_Out_ string& txt)
 
     MusicalLine_tag&& info = (line.GetInfo());
 
-    sprintf_s(c, "%.12lf,%.12lf,%d,%d,%d,%d,%d,%d\r\n",
+    sprintf_s(c, "%.20g,%.20g,%d,%d,%d,%d,%d,%d\r\n",
         line.GetTiming(), bpmORsv, info.measure,
         info.hsType.sampleSet, info.hsType.idx,
         info.volume, linecolor, (int)info.kiai);
