@@ -122,7 +122,7 @@ private:
 
 	BOOL Generate_ValueCheck();
 	BOOL Generate();
-	BOOL GenerateSV(double, double, NoteContainer::iterator, LineContainer::iterator, _Out_ double&);
+	BOOL GenerateSV(double, double, double, LineContainer::iterator, _Out_ double&);
 	BOOL GenerateVolume(LineContainer::iterator, _Out_ int&);
 	BOOL GenerateKiai(LineContainer::iterator, _Out_ BOOL&);
 	BOOL ReLoadOsuWindow();

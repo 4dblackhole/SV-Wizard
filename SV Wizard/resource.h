@@ -50,7 +50,6 @@
 #define IDC_SPIN_STARTTIMING_SMALL      1031
 #define IDC_CHECK_BASEBPM               1032
 #define IDC_SPIN_LINEOFFSET             1033
-#define IDC_CHECK1                      1045
 #define IDC_CHECK_BACKUP                1045
 #define IDM_OPEN                        32776
 #define IDM_SAVE                        32777
@@ -63,6 +62,7 @@
 #define ID_LOCATE_TOPCENTER             32786
 #define ID_LOCATE_TOPRIGHT              32787
 #define ID_FILES_UNDO                   32791
+#define IDM_UNDO                        32792
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -71,7 +71,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        136
-#define _APS_NEXT_COMMAND_VALUE         32792
+#define _APS_NEXT_COMMAND_VALUE         32794
 #define _APS_NEXT_CONTROL_VALUE         1046
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
