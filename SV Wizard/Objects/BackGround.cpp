@@ -1,6 +1,7 @@
 #include "BackGround.h"
 
-BackGround::BackGround() :image(NULL), origHeight(0), origWidth(0), targetWnd(0)
+BackGround::BackGround() :image(NULL), origHeight(0), origWidth(0), targetWnd(0),
+sideBeingDragged(0), origWHRate(0)
 {
 }
 
@@ -10,116 +11,92 @@ BackGround::~BackGround()
 
 void BackGround::SetBackGround(HWND hWnd, Image* img)
 {
-    image = img;
-    targetWnd = hWnd;
-    if (image == NULL)return;
+	image = img;
+	targetWnd = hWnd;
+	if (image == NULL)return;
 
-    origWidth = img->GetOrigWidth();
-    origHeight = img->GetOrigHeight();
+	origWidth = img->GetOrigWidth();
+	origHeight = img->GetOrigHeight();
+	origWHRate = (double)origWidth / (double)origHeight;
 
-    int width{}, height{};
-    double rate = 1.0;
+	sideBeingDragged = -1;
 
-    if (BGMaxXPixel < origWidth) rate = min(rate, ((double)BGMaxXPixel / (double)origWidth));
-    if (BGMaxYPixel < origHeight) rate = min(rate, ((double)BGMaxYPixel / (double)origHeight));
+	int width, height;
+	double rate = 1.0;
 
-    width = int((double)origWidth * rate);
-    height = int((double)origHeight * rate);
+	if (BGMaxXPixel < origWidth) rate = min(rate, ((double)BGMaxXPixel / (double)origWidth));
+	if (BGMaxYPixel < origHeight) rate = min(rate, ((double)BGMaxYPixel / (double)origHeight));
 
-    SHORTCUT.SetClientRect(hWnd, width, height); //calls WM_SIZE
+	width = int((double)origWidth * rate);
+	height = int((double)origHeight * rate);
+
+	SHORTCUT.SetClientRect(hWnd, width, height); //calls WM_SIZE
 }
 
-void BackGround::Resize(WPARAM wParam,LPARAM lParam)
+void BackGround::ResizeNew(WPARAM wParam, LPARAM lParam)
 {
-    if (image == NULL)return;
+	if (image == NULL)return;
 
-    int width = LOWORD(lParam);
-    int height = HIWORD(lParam);
+	WINDOWPOS *winPos = reinterpret_cast<WINDOWPOS*>(lParam);
+	if (winPos->flags & SWP_NOSIZE)return;
 
-    image->Resize(width, height);
+	RECT wrt, crt;
+	GetWindowRect(targetWnd, &wrt);
+	GetClientRect(targetWnd, &crt);
 
-    if (width < (height * (origWidth / origHeight)))
-    {
-        RECT wrt, crt;
-        GetWindowRect(targetWnd, &wrt);
-        GetClientRect(targetWnd, &crt);
+	int header = wrt.bottom - wrt.top - crt.bottom;
+	int border = wrt.right - wrt.left - crt.right;
 
-        int border = wrt.right - wrt.left - crt.right;
-        int header = wrt.bottom - wrt.top - crt.bottom;
+	int clientWidth = winPos->cx - border;
+	int clientHeight = winPos->cy - header;
 
-        width = (height * (origWidth / origHeight)) + border;
-        height = height + header;
+	switch (sideBeingDragged)
+	{
+		case WMSZ_BOTTOM:
+		case WMSZ_TOP:
+			clientHeight = (int)max((double)clientHeight, (double)origHeight * BGMinSizeRate);
+			clientHeight = (int)min((double)clientHeight, (double)origHeight * BGMaxSizeRate);
+			winPos->cx = (int)((double)clientHeight * origWHRate) + border;
+			winPos->cy = clientHeight + header;
+			clientWidth = winPos->cx - border;
+		break;
 
-        SetWindowPos(targetWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
-    }
+		case WMSZ_LEFT:
+		case WMSZ_TOPLEFT:
+		case WMSZ_BOTTOMLEFT:
+		case WMSZ_RIGHT:
+		case WMSZ_TOPRIGHT:
+		case WMSZ_BOTTOMRIGHT:
+			clientWidth = (int)max((double)clientWidth, (double)origWidth * BGMinSizeRate);
+			clientWidth = (int)min((double)clientWidth, (double)origWidth * BGMaxSizeRate);
+			winPos->cy = (int)((double)clientWidth / origWHRate) + header;
+			winPos->cx = clientWidth + border;
+			clientHeight = winPos->cy - header;
+		break;
+	}
+	
+	image->Resize(clientWidth, clientHeight);
 }
 
-void BackGround::Resizing(WPARAM wParam, LPARAM lParam)
+void BackGround::ResizingNew(WPARAM wParam, LPARAM lParam)
 {
-    if (image == NULL)return;
-
-    RECT* lprc = (RECT*)lParam;
-    RECT wrt, crt;
-    GetWindowRect(targetWnd, &wrt);
-    GetClientRect(targetWnd, &crt);
-
-    int border = wrt.right - wrt.left - crt.right;
-    int header = wrt.bottom - wrt.top - crt.bottom;
-
-    int width, height;
-
-    //Minimum size
-
-    BGMinRate = max(BGMinXPixel / (double)origWidth, BGMinYPixel / (double)origHeight);
-
-    width = (int)((double)origWidth * BGMinRate) + border;
-    height = (int)((double)origHeight * BGMinRate) + header;
-
-    if (lprc->right - lprc->left < width)
-        lprc->right = lprc->left + width;
-
-    if (lprc->bottom - lprc->top < height)
-        lprc->bottom = lprc->top + height;
-    
-    // Maximum size
-
-    BGMaxRate = min(BGMaxXPixel / (double)origWidth, BGMaxYPixel / (double)origHeight);
-
-    width = (int)((double)origWidth * BGMaxRate) + border;
-    height = (int)((double)origHeight * BGMaxRate) + header;
-
-    if (lprc->right - lprc->left > width)
-        lprc->right = lprc->left + width;
-
-    if (lprc->bottom - lprc->top > height)
-        lprc->bottom = lprc->top + height;
-
-    width = lprc->right - lprc->left;
-    height = lprc->bottom - lprc->top;
-
-    switch (wParam)
-    {
-        case WMSZ_LEFT:
-        case WMSZ_RIGHT:
-        {
-            height = (int)((double)(width - border) * ((double)origHeight / (double)origWidth)) + header;
-            lprc->bottom = lprc->top + height;
-        }
-        break;
-        
-        case WMSZ_TOP:
-        case WMSZ_BOTTOM:
-        default:
-        {
-            width = (int)((double)(height - header) * ((double)origWidth / (double)origHeight)) + border;
-            lprc->right = lprc->left + width;
-        }
-        break;
-    }
+	sideBeingDragged = (int)wParam;
 }
 
 void BackGround::Render(HDC hdc)
 {
-    if (image == NULL)return;
-    image->Render(hdc);
+	if (image == NULL)return;
+	image->Render(hdc);
+}
+
+void BackGround::SetBGMinX(double a)
+{
+	BGMinXPixel = a;
+	BGMinSizeRate = max(a / (double)origWidth, BGMinSizeRate);
+}
+
+void BackGround::SetBGMinY(double a)
+{
+	BGMinYPixel = a;
+	BGMinSizeRate = max(a / (double)origHeight, BGMinSizeRate);
 }

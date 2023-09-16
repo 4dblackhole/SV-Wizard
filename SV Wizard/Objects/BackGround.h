@@ -10,27 +10,30 @@ public:
 	~BackGround();
 
 	void SetBackGround(HWND, Image*);
-	void Resize(WPARAM, LPARAM);
-	void Resizing(WPARAM, LPARAM);
+	void ResizeNew(WPARAM, LPARAM);
+	void ResizingNew(WPARAM, LPARAM);
 	void Render(HDC);
 
-	inline double GetBGMinRate() { return BGMinRate; }
-	inline double GetBGMaxRate() { return BGMaxRate; }
+	inline double GetBGMinSizeRate() { return BGMinSizeRate; }
+	inline double GetBGMaxSizeRate() { return BGMaxSizeRate; }
 
-	inline void SetBGMinRate(double a) { BGMinRate = a; }
-	inline void SetBGMaxRate(double a) { BGMaxRate = a; }
+	inline void SetBGMinSizeRate(double a) { BGMinSizeRate = a; }
+	inline void SetBGMaxSizeRate(double a) { BGMaxSizeRate = a; }
 
-	inline void SetBGMinX(double a) { BGMinXPixel= a; }
-	inline void SetBGMinY(double a) { BGMinYPixel = a; }
+	void SetBGMinX(double a);
+	void SetBGMinY(double a);
 
 private:
 	Image* image;
-	int origWidth, origHeight;
+	int origWidth, origHeight; //image's Width and Height
+	double origWHRate; //image's H/W Rate
+	int sideBeingDragged;
+
 	HWND targetWnd;
-	double BGMinRate = 0.2L;
+	double BGMinSizeRate = 0.8L;
 	double BGMinXPixel = 256.0L;
-	double BGMinYPixel = 192.0L;
-	double BGMaxRate = 1.2L;
+	double BGMinYPixel = 572.0L;
+	double BGMaxSizeRate = 1.0L;
 	double BGMaxXPixel = 1440.0L;
 	double BGMaxYPixel = 960.0L;
 };

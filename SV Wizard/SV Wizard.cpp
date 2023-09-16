@@ -162,15 +162,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+        case WM_WINDOWPOSCHANGING:
+        {
+            BG.ResizeNew(wParam, lParam);
+        }
+        break;
+
         case WM_SIZING:
         {
-            BG.Resizing(wParam, lParam);
+            BG.ResizingNew(wParam, lParam);
         }
         break;
 
         case WM_SIZE:
         {
-            BG.Resize(wParam, lParam);
             Dialog.Move();
         }
         break;
